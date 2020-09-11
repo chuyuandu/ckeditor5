@@ -7,6 +7,8 @@
 
 import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
 import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import indexOf from '@ckeditor/ckeditor5-utils/src/dom/indexof';
+import isRange from '@ckeditor/ckeditor5-utils/src/dom/isrange';
 import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
 import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
@@ -134,32 +136,37 @@ describe( 'LinkUI', () => {
 
 		it( 'should add #formView to the balloon and attach the balloon to the selection when text fragment is selected', () => {
 			setModelData( editor.model, '<paragraph>f[o]o</paragraph>' );
-			const selectedRange = editorElement.ownerDocument.getSelection().getRangeAt( 0 );
 
 			linkUIFeature._showUI();
+
+			const expectedRange = getMarkersRange( editor );
 
 			expect( balloon.visibleView ).to.equal( formView );
 			sinon.assert.calledWithExactly( balloonAddSpy, {
 				view: formView,
 				position: {
-					target: selectedRange
+					target: sinon.match( isRange )
 				}
 			} );
+
+			assertDomRange( expectedRange, balloonAddSpy.args[ 0 ][ 0 ].position.target );
 		} );
 
-		it( 'should add #formView to the balloon and attach the balloon to the selection when selection is collapsed', () => {
+		it( 'should add #formView to the balloon and attach the balloon to the marker element when selection is collapsed', () => {
+			// (#7926)
 			setModelData( editor.model, '<paragraph>f[]oo</paragraph>' );
-			const selectedRange = editorElement.ownerDocument.getSelection().getRangeAt( 0 );
-
 			linkUIFeature._showUI();
+
+			const expectedRange = getMarkersRange( editor );
 
 			expect( balloon.visibleView ).to.equal( formView );
 			sinon.assert.calledWithExactly( balloonAddSpy, {
 				view: formView,
 				position: {
-					target: selectedRange
+					target: sinon.match( isRange )
 				}
 			} );
+			assertDomRange( expectedRange, balloonAddSpy.args[ 0 ][ 0 ].position.target );
 		} );
 
 		it( 'should add #actionsView to the balloon and attach the balloon to the link element when collapsed selection is inside ' +
@@ -363,10 +370,14 @@ describe( 'LinkUI', () => {
 					writer.setSelection( text, 1, true );
 				} );
 
+				const expectedRange = getMarkersRange( editor );
+
 				sinon.assert.calledOnce( spy );
 				sinon.assert.calledWithExactly( spy, {
-					target: editorElement.ownerDocument.getSelection().getRangeAt( 0 )
+					target: sinon.match( isRange )
 				} );
+
+				assertDomRange( expectedRange, spy.args[ 0 ][ 0 ].target );
 			} );
 
 			it( 'not update the position when is in not visible stack', () => {
@@ -481,6 +492,9 @@ describe( 'LinkUI', () => {
 			const markerRange = editor.model.markers.get( 'link-ui' ).getRange();
 
 			expect( markerRange.isEqual( expectedRange ) ).to.be.true;
+
+			expect( getViewData( editor.editing.view ) ).to.equal( '<p>f{<span class="ck-fake-link-selection">o</span>}o</p>' );
+			expect( editor.getData() ).to.equal( '<p>foo</p>' );
 		} );
 
 		it( 'should display a fake visual selection on a collapsed selection', () => {
@@ -498,7 +512,30 @@ describe( 'LinkUI', () => {
 			const markerRange = editor.model.markers.get( 'link-ui' ).getRange();
 
 			expect( markerRange.isEqual( expectedRange ) ).to.be.true;
+
+			expect( getViewData( editor.editing.view ) ).to.equal(
+				'<p>f{}<span class="ck-fake-link-selection ck-fake-link-selection_collapsed"></span>o</p>'
+			);
+			expect( editor.getData() ).to.equal( '<p>fo</p>' );
 		} );
+
+		function getMarkersRange( editor ) {
+			const markerElements = editor.ui.view.element.querySelectorAll( '.ck-fake-link-selection' );
+			const lastMarkerElement = markerElements[ markerElements.length - 1 ];
+
+			const range = document.createRange();
+			range.setStart( markerElements[ 0 ].parentElement, indexOf( markerElements[ 0 ] ) );
+			range.setEnd( lastMarkerElement.parentElement, indexOf( lastMarkerElement ) + 1 );
+
+			return range;
+		}
+
+		function assertDomRange( expected, actual ) {
+			expect( actual, 'startContainer' ).to.have.property( 'startContainer', expected.startContainer );
+			expect( actual, 'startOffset' ).to.have.property( 'startOffset', expected.startOffset );
+			expect( actual, 'endContainer' ).to.have.property( 'endContainer', expected.endContainer );
+			expect( actual, 'endOffset' ).to.have.property( 'endOffset', expected.endOffset );
+		}
 	} );
 
 	describe( '_hideUI()', () => {
