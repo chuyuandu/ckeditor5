@@ -1,34 +1,48 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* global document, window, console, ClassicEditor */
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { ClassicEditor } from './build-word-count-source.js';
 
 ClassicEditor
 	.create( document.querySelector( '#demo-editor' ), {
+		cloudServices: CS_CONFIG,
 		toolbar: {
 			items: [
-				'heading',
+				'undo', 'redo',
+				'|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline',
+				'imageStyle:block',
+				'imageStyle:wrapText',
 				'|',
-				'bold',
-				'italic',
-				'bulletedList',
-				'numberedList',
+				'toggleImageCaption',
+				'imageTextAlternative',
 				'|',
-				'outdent',
-				'indent',
-				'|',
-				'blockQuote',
-				'link',
-				'|',
-				'mediaEmbed',
-				'insertTable',
-				'|',
-				'undo',
-				'redo'
-			],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+				'ckboxImageEdit'
+			]
 		},
 		table: {
 			contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]

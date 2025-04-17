@@ -1,26 +1,40 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document */
-
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/src/ckeditor';
-import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
+import { TableColumnResize } from 'ckeditor5';
+import {
+	CS_CONFIG,
+	DecoupledEditor,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
 DecoupledEditor
 	.create( document.querySelector( '.document-editor__editable' ), {
-		extraPlugins: [ ImageResize ],
+		extraPlugins: [
+			TableColumnResize
+		],
 		cloudServices: CS_CONFIG,
-		image: {
-			toolbar: [ 'imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight' ]
+		toolbar: {
+			items: [
+				'undo', 'redo',
+				'|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
 		}
 	} )
 	.then( editor => {
-		const toolbarContainer = document.querySelector( '.document-editor__toolbar' );
-
-		toolbarContainer.appendChild( editor.ui.view.toolbar.element );
+		document
+			.querySelector( '.document-editor__toolbar' )
+			?.appendChild( editor.ui.view.toolbar.element );
 
 		window.editor = editor;
 	} )

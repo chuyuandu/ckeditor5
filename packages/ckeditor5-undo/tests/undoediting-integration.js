@@ -1,23 +1,23 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* global document */
 
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
 
-import UndoEditing from '../src/undoediting';
+import UndoEditing from '../src/undoediting.js';
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import HeadingEditing from '@ckeditor/ckeditor5-heading/src/headingediting';
-import Typing from '@ckeditor/ckeditor5-typing/src/typing';
-import Enter from '@ckeditor/ckeditor5-enter/src/enter';
-import Clipboard from '@ckeditor/ckeditor5-clipboard/src/clipboard';
-import BoldEditing from '@ckeditor/ckeditor5-basic-styles/src/bold/boldediting';
-import TableEditing from '@ckeditor/ckeditor5-table/src/tableediting';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import HeadingEditing from '@ckeditor/ckeditor5-heading/src/headingediting.js';
+import Typing from '@ckeditor/ckeditor5-typing/src/typing.js';
+import Enter from '@ckeditor/ckeditor5-enter/src/enter.js';
+import Clipboard from '@ckeditor/ckeditor5-clipboard/src/clipboard.js';
+import BoldEditing from '@ckeditor/ckeditor5-basic-styles/src/bold/boldediting.js';
+import TableEditing from '@ckeditor/ckeditor5-table/src/tableediting.js';
 
-import { setData, getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import { setData, getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
 describe( 'UndoEditing integration', () => {
 	let editor, model, doc, root, div;
@@ -53,7 +53,7 @@ describe( 'UndoEditing integration', () => {
 	}
 
 	function input( input ) {
-		model.enqueueChange( 'transparent', () => {
+		model.enqueueChange( { isUndoable: false }, () => {
 			setData( model, input );
 		} );
 	}
@@ -888,7 +888,7 @@ describe( 'UndoEditing integration', () => {
 				'<paragraph>Bar</paragraph>'
 			);
 
-			editor.execute( 'forwardDelete' );
+			editor.execute( 'deleteForward' );
 			output( '<paragraph>Foo</paragraph><paragraph>[]Bar</paragraph>' );
 
 			editor.execute( 'undo' );
@@ -1100,6 +1100,87 @@ describe( 'UndoEditing integration', () => {
 				'</table>'
 			);
 		} );
+
+		it( 'undo table cells content wrapping', () => {
+			model.schema.register( 'tableCellContent', {
+				allowIn: 'tableCell',
+				allowContentOf: 'tableCell',
+				isLimit: true
+			} );
+
+			editor.conversion.elementToElement( { model: 'tableCellContent', view: 'td-content' } );
+
+			input(
+				'<table>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>00</paragraph></tableCell>' +
+						'[<tableCell><paragraph>01</paragraph></tableCell>]' +
+						'[<tableCell><paragraph>02</paragraph></tableCell>]' +
+						'<tableCell><paragraph>03</paragraph></tableCell>' +
+					'</tableRow>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>10</paragraph></tableCell>' +
+						'[<tableCell><paragraph>11</paragraph></tableCell>]' +
+						'[<tableCell><paragraph>12</paragraph></tableCell>]' +
+						'<tableCell><paragraph>13</paragraph></tableCell>' +
+					'</tableRow>' +
+				'</table>'
+			);
+
+			model.change( writer => {
+				const targetCell = root.getNodeByPath( [ 0, 0, 1 ] );
+				const insertionWrapper = writer.createElement( 'tableCellContent' );
+				const deletionWrapper = writer.createElement( 'tableCellContent' );
+				const paragraph = writer.createElement( 'paragraph' );
+
+				writer.wrap( writer.createRangeIn( targetCell ), deletionWrapper );
+				writer.insert( insertionWrapper, targetCell, 0 );
+
+				writer.insert( writer.createText( 'foobar' ), paragraph, 0 );
+				writer.insert( paragraph, insertionWrapper, 'end' );
+
+				writer.setSelection( writer.createRangeOn( targetCell ) );
+			} );
+
+			output(
+				'<table>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>00</paragraph></tableCell>' +
+						'[<tableCell>' +
+							'<tableCellContent><paragraph>foobar</paragraph></tableCellContent>' +
+							'<tableCellContent><paragraph>01</paragraph></tableCellContent>' +
+						'</tableCell>]' +
+						'<tableCell><paragraph>02</paragraph></tableCell>' +
+						'<tableCell><paragraph>03</paragraph></tableCell>' +
+					'</tableRow>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>10</paragraph></tableCell>' +
+						'<tableCell><paragraph>11</paragraph></tableCell>' +
+						'<tableCell><paragraph>12</paragraph></tableCell>' +
+						'<tableCell><paragraph>13</paragraph></tableCell>' +
+					'</tableRow>' +
+				'</table>'
+			);
+
+			editor.execute( 'undo' );
+
+			output(
+				'<table>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>00</paragraph></tableCell>' +
+						'[<tableCell><paragraph>01</paragraph></tableCell>]' +
+						'[<tableCell><paragraph>02</paragraph></tableCell>]' +
+						'<tableCell><paragraph>03</paragraph></tableCell>' +
+					'</tableRow>' +
+					'<tableRow>' +
+						'<tableCell><paragraph>10</paragraph></tableCell>' +
+						'[<tableCell><paragraph>11</paragraph></tableCell>]' +
+						'[<tableCell><paragraph>12</paragraph></tableCell>]' +
+						'<tableCell><paragraph>13</paragraph></tableCell>' +
+					'</tableRow>' +
+				'</table>'
+			);
+		} );
 	} );
 
 	it( 'postfixers should not add another undo step when fixing undo changes', () => {
@@ -1154,7 +1235,7 @@ describe( 'UndoEditing integration', () => {
 
 	function type( path, text ) {
 		setSelection( path.slice(), path.slice() );
-		editor.execute( 'input', { text } );
+		editor.execute( 'insertText', { text } );
 	}
 
 	function remove( path ) {

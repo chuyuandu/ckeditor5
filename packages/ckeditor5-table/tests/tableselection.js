@@ -1,24 +1,23 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals document */
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 import {
 	getData as getModelData,
 	setData as setModelData,
 	stringify as stringifyModel
-} from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+} from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import TableEditing from '../src/tableediting';
-import TableSelection from '../src/tableselection';
-import { assertSelectedCells, modelTable } from './_utils/utils';
-import DocumentFragment from '@ckeditor/ckeditor5-engine/src/model/documentfragment';
-import Typing from '@ckeditor/ckeditor5-typing/src/typing';
-import { assertEqualMarkup } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import TableEditing from '../src/tableediting.js';
+import TableSelection from '../src/tableselection.js';
+import { assertSelectedCells, modelTable } from './_utils/utils.js';
+import DocumentFragment from '@ckeditor/ckeditor5-engine/src/model/documentfragment.js';
+import Typing from '@ckeditor/ckeditor5-typing/src/typing.js';
 
 describe( 'TableSelection', () => {
 	let editorElement, editor, model, tableSelection, modelRoot;
@@ -49,6 +48,14 @@ describe( 'TableSelection', () => {
 
 		it( 'should have pluginName', () => {
 			expect( TableSelection.pluginName ).to.equal( 'TableSelection' );
+		} );
+
+		it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+			expect( TableSelection.isOfficialPlugin ).to.be.true;
+		} );
+
+		it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+			expect( TableSelection.isPremiumPlugin ).to.be.false;
 		} );
 
 		describe( 'plugin disabling support', () => {
@@ -353,14 +360,14 @@ describe( 'TableSelection', () => {
 
 			editor.execute( 'delete' );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '', '', '13' ],
 				[ '', '[]', '23' ],
 				[ '31', '32', '33' ]
 			] ) );
 		} );
 
-		it( 'should put selection in the last selected cell after removing content (forward delete)', () => {
+		it( 'should put selection in the last selected cell after removing content (delete forward)', () => {
 			tableSelection.setCellSelection(
 				modelRoot.getChild( 0 ).getChild( 0 ).getChild( 0 ),
 				modelRoot.getChild( 0 ).getChild( 1 ).getChild( 1 )
@@ -368,7 +375,7 @@ describe( 'TableSelection', () => {
 
 			editor.execute( 'delete' );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '', '', '13' ],
 				[ '', '[]', '23' ],
 				[ '31', '32', '33' ]
@@ -381,9 +388,9 @@ describe( 'TableSelection', () => {
 				modelRoot.getChild( 0 ).getChild( 0 ).getChild( 0 )
 			);
 
-			editor.execute( 'forwardDelete' );
+			editor.execute( 'deleteForward' );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '[]', '12', '13' ],
 				[ '21', '22', '23' ],
 				[ '31', '32', '33' ]
@@ -400,7 +407,7 @@ describe( 'TableSelection', () => {
 				model.deleteContent( model.document.selection );
 			} );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '', '', '13' ],
 				[ '', '[]', '23' ],
 				[ '31', '32', '33' ]
@@ -424,7 +431,7 @@ describe( 'TableSelection', () => {
 				writer.setSelection( selection );
 			} );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '', '[]', '13' ],
 				[ '21', '22', '23' ],
 				[ '31', '32', '33' ]
@@ -450,7 +457,7 @@ describe( 'TableSelection', () => {
 				writer.setSelection( selection );
 			} );
 
-			assertEqualMarkup( getModelData( model ), modelTable( [
+			expect( getModelData( model ) ).to.equalMarkup( modelTable( [
 				[ '[]', '', '13' ],
 				[ '21', '22', '23' ],
 				[ '31', '32', '33' ]
@@ -561,6 +568,28 @@ describe( 'TableSelection', () => {
 			expect( tableSelection.getFocusCell() ).to.equal( focusCell );
 			expect( tableSelection.getAnchorCell() ).to.equal( anchorCell );
 			expect( selection.isBackward ).to.be.true;
+		} );
+
+		it( 'should select all cells when selecting from a regular row to a row with colspan', () => {
+			setModelData( model, modelTable( [
+				[ '00', '01', '02' ],
+				[ { contents: '11', colspan: 3 } ]
+			] ) );
+
+			table = modelRoot.getChild( 0 );
+
+			const anchorCell = table.getChild( 0 ).getChild( 0 );
+			const targetCell = table.getChild( 1 ).getChild( 0 );
+
+			tableSelection.setCellSelection( anchorCell, targetCell );
+
+			const selectedCells = tableSelection.getSelectedTableCells();
+
+			expect( selectedCells ).to.have.length( 4 );
+			expect( selectedCells[ 0 ] ).to.equal( table.getChild( 0 ).getChild( 0 ) );
+			expect( selectedCells[ 1 ] ).to.equal( table.getChild( 0 ).getChild( 1 ) );
+			expect( selectedCells[ 2 ] ).to.equal( table.getChild( 0 ).getChild( 2 ) );
+			expect( selectedCells[ 3 ] ).to.equal( table.getChild( 1 ).getChild( 0 ) );
 		} );
 
 		function assertSelection( anchorCell, focusCell, count ) {

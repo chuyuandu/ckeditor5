@@ -1,19 +1,40 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window, document */
-
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import RestrictedEditingMode from '@ckeditor/ckeditor5-restricted-editing/src/restrictededitingmode';
-import StandardEditingMode from '@ckeditor/ckeditor5-restricted-editing/src/standardeditingmode';
-
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import Table from '@ckeditor/ckeditor5-table/src/table';
+import {
+	StandardEditingMode,
+	RestrictedEditingMode,
+	CKBox,
+	CKBoxImageEdit,
+	PictureEditing,
+	ImageInsert,
+	ImageResize,
+	AutoImage,
+	LinkImage
+} from 'ckeditor5';
+import {
+	TOKEN_URL,
+	CS_CONFIG,
+	ArticlePluginSet,
+	ClassicEditor,
+	getViewportTopOffsetConfig,
+	attachTourBalloon,
+	findToolbarItem
+} from '@snippets/index.js';
 
 ClassicEditor.builtinPlugins.push(
-	RestrictedEditingMode, StandardEditingMode, ArticlePluginSet, Table );
+	RestrictedEditingMode,
+	StandardEditingMode,
+	ArticlePluginSet,
+	PictureEditing,
+	ImageInsert,
+	ImageResize,
+	AutoImage,
+	LinkImage,
+	CKBox,
+	CKBoxImageEdit );
 
 const restrictedModeButton = document.getElementById( 'mode-restricted' );
 const standardModeButton = document.getElementById( 'mode-standard' );
@@ -38,13 +59,14 @@ async function startMode( selectedMode ) {
 async function startStandardEditingMode() {
 	await reloadEditor( {
 		removePlugins: [ 'RestrictedEditingMode' ],
-		toolbar: [
-			'heading', '|', 'bold', 'italic', 'link', '|',
-			'bulletedList', 'numberedList', 'blockQuote', 'insertTable', '|',
-			'restrictedEditingException', '|', 'undo', 'redo'
-		],
-		image: {
-			toolbar: [ 'imageStyle:full', 'imageStyle:side', '|', 'imageTextAlternative' ]
+		cloudServices: CS_CONFIG,
+		toolbar: {
+			items: [
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'restrictedEditingException', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
 		},
 		table: {
 			contentToolbar: [
@@ -52,14 +74,48 @@ async function startStandardEditingMode() {
 				'tableRow',
 				'mergeTableCells'
 			]
-		}
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|',
+				'toggleImageCaption', 'imageTextAlternative', 'ckboxImageEdit'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
+		},
+		updateSourceElementOnDestroy: true
 	} );
 }
 
 async function startRestrictedEditingMode() {
 	await reloadEditor( {
 		removePlugins: [ 'StandardEditingMode' ],
-		toolbar: [ 'bold', 'italic', 'link', '|', 'restrictedEditing', '|', 'undo', 'redo' ]
+		cloudServices: CS_CONFIG,
+		toolbar: [ 'restrictedEditing', '|', 'bold', 'italic', 'link', '|', 'undo', 'redo' ],
+		image: {
+			toolbar: [
+				'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|',
+				'toggleImageCaption', 'imageTextAlternative', 'ckboxImageEdit'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ]
+		},
+		updateSourceElementOnDestroy: true
 	} );
 }
 
@@ -69,4 +125,16 @@ async function reloadEditor( config ) {
 	}
 
 	window.editor = await ClassicEditor.create( document.querySelector( '#restricted-editing-editor' ), config );
+
+	attachTourBalloon( {
+		target: findToolbarItem(
+			window.editor.ui.view.toolbar,
+			item => item.label && [ 'Enable editing', 'Disable editing' ].includes( item.label )
+		),
+		text: 'Click to add or remove editable regions.',
+		editor: window.editor,
+		tippyOptions: {
+			placement: 'bottom-start'
+		}
+	} );
 }

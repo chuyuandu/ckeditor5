@@ -1,12 +1,12 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals console, document */
 
-import ClassicEditor from '../../src/classiceditor';
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
+import ClassicEditor from '../../src/classiceditor.js';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
 
 /*
  * Memory-leak safe version of classic editor manual test does not:
@@ -38,8 +38,9 @@ function initEditor() {
 			},
 			image: {
 				toolbar: [
-					'imageStyle:full',
-					'imageStyle:side',
+					'imageStyle:inline',
+					'imageStyle:block',
+					'imageStyle:wrapText',
 					'|',
 					'imageTextAlternative'
 				]

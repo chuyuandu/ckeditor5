@@ -1,35 +1,32 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals document */
 
-import testUtils from '@ckeditor/ckeditor5-ui/tests/_utils/utils';
+import { IconBold, IconItalic, IconCheck, IconCancel } from 'ckeditor5/src/icons.js';
+import testUtils from '@ckeditor/ckeditor5-ui/tests/_utils/utils.js';
 
-import Collection from '@ckeditor/ckeditor5-utils/src/collection';
-import Model from '@ckeditor/ckeditor5-ui/src/model';
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import Locale from '@ckeditor/ckeditor5-utils/src/locale';
+import Collection from '@ckeditor/ckeditor5-utils/src/collection.js';
+import Model from '@ckeditor/ckeditor5-ui/src/model.js';
+import View from '@ckeditor/ckeditor5-ui/src/view.js';
+import Locale from '@ckeditor/ckeditor5-utils/src/locale.js';
 
-import IconView from '@ckeditor/ckeditor5-ui/src/icon/iconview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import SwitchButtonView from '@ckeditor/ckeditor5-ui/src/button/switchbuttonview';
+import IconView from '@ckeditor/ckeditor5-ui/src/icon/iconview.js';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview.js';
+import SwitchButtonView from '@ckeditor/ckeditor5-ui/src/button/switchbuttonview.js';
 
-import { createDropdown, addListToDropdown, addToolbarToDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
+import { createDropdown, addListToDropdown, addToolbarToDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils.js';
 
-import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview';
-import ToolbarSeparatorView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarseparatorview';
+import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview.js';
+import ToolbarSeparatorView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarseparatorview.js';
 
-import LabeledFieldView from '@ckeditor/ckeditor5-ui/src/labeledfield/labeledfieldview';
-import { createLabeledInputText } from '@ckeditor/ckeditor5-ui/src/labeledfield/utils';
+import LabeledFieldView from '@ckeditor/ckeditor5-ui/src/labeledfield/labeledfieldview.js';
+import { createLabeledInputText } from '@ckeditor/ckeditor5-ui/src/labeledfield/utils.js';
 
-import boldIcon from '@ckeditor/ckeditor5-basic-styles/theme/icons/bold.svg';
-import italicIcon from '@ckeditor/ckeditor5-basic-styles/theme/icons/italic.svg';
-import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
-import cancelIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
-
-import SplitButtonView from '@ckeditor/ckeditor5-ui/src/dropdown/button/splitbuttonview';
+import SplitButtonView from '@ckeditor/ckeditor5-ui/src/dropdown/button/splitbuttonview.js';
+import { SpinnerView } from '@ckeditor/ckeditor5-ui';
 
 const locale = new Locale();
 
@@ -37,7 +34,8 @@ class TextView extends View {
 	constructor() {
 		super();
 
-		this.element = document.createTextNode( 'Sample text' );
+		this.element = document.createElement( 'span' );
+		this.element.innerHTML = 'Sample text';
 	}
 }
 
@@ -71,6 +69,7 @@ const ui = testUtils.createTestUIView( {
 	'buttonResponsive2': '#button-responsive-2',
 	'buttonResponsive3': '#button-responsive-3',
 	'buttonTooltip': '#button-tooltip',
+	'buttonSpinner': '#button-spinner',
 
 	listDropdown: '#list-dropdown',
 	buttonDropdown: '#button-dropdown',
@@ -96,10 +95,10 @@ renderInput();
 function renderIcon() {
 	// --- In-text ------------------------------------------------------------
 
-	ui.iconPlain1.add( icon( boldIcon ) );
-	ui.iconPlain2.add( icon( italicIcon ) );
-	ui.iconColor1.add( icon( boldIcon ) );
-	ui.iconColor2.add( icon( italicIcon ) );
+	ui.iconPlain1.add( icon( IconBold ) );
+	ui.iconPlain2.add( icon( IconItalic ) );
+	ui.iconColor1.add( icon( IconBold ) );
+	ui.iconColor2.add( icon( IconItalic ) );
 }
 
 function renderButton() {
@@ -124,8 +123,8 @@ function renderButton() {
 	const actionButton = button( { label: 'Action button' } );
 	const roundedButton = button( { label: 'Rounded corners' } );
 	const boldButton = button( { label: 'Bold text' } );
-	const saveButton = button( { label: 'Save', withText: false, icon: checkIcon } );
-	const cancelButton = button( { label: 'Cancel', withText: false, icon: cancelIcon } );
+	const saveButton = button( { label: 'Save', withText: false, icon: IconCheck } );
+	const cancelButton = button( { label: 'Cancel', withText: false, icon: IconCancel } );
 
 	ui.buttonTypes.add( toolbar( [
 		actionButton, roundedButton, boldButton, saveButton, cancelButton
@@ -148,13 +147,13 @@ function renderButton() {
 	ui.buttonIcon.add( toolbar( [
 		button( {
 			label: 'Bold',
-			icon: boldIcon
+			icon: IconBold
 		} )
 	] ) );
 
 	const styledButton = button( {
 		label: 'Button with an icon and custom styles',
-		icon: italicIcon
+		icon: IconItalic
 	} );
 
 	ui.buttonIconCustom.add( toolbar( [ styledButton ] ) );
@@ -164,14 +163,14 @@ function renderButton() {
 
 	const disabledActionButton = button( {
 		label: 'Disabled action',
-		icon: boldIcon,
+		icon: IconBold,
 		isEnabled: false
 	} );
 
 	ui.buttonIconStates.add( toolbar( [
 		button( {
 			label: 'Disabled',
-			icon: boldIcon,
+			icon: IconBold,
 			isEnabled: false
 		} ),
 		disabledActionButton,
@@ -179,7 +178,7 @@ function renderButton() {
 			label: 'Bold',
 			withText: false,
 			tooltip: true,
-			icon: boldIcon
+			icon: IconBold
 		} )
 	] ) );
 
@@ -196,7 +195,7 @@ function renderButton() {
 		} ),
 		button( {
 			label: 'Bar',
-			icon: boldIcon,
+			icon: IconBold,
 			keystroke: 'Shift+Tab',
 			withKeystroke: true
 		} )
@@ -209,7 +208,7 @@ function renderButton() {
 			label: 'Bold',
 			withText: false,
 			tooltip: true,
-			icon: boldIcon
+			icon: IconBold
 		} );
 
 		ui[ `buttonResponsive${ i }` ].add( toolbar( [
@@ -219,7 +218,7 @@ function renderButton() {
 			} ),
 			button( {
 				label: 'Bold',
-				icon: boldIcon,
+				icon: IconBold,
 				isEnabled: true
 			} ),
 			notextButton
@@ -233,17 +232,61 @@ function renderButton() {
 
 	ui.buttonTooltip.add( toolbar( [
 		button( {
-			label: 'This button has a tooltip (south)',
+			label: 'This button has a tooltip when hovered (south)',
 			withText: true,
 			tooltip: 'The content of the tooltip'
 		} ),
 		button( {
-			label: 'This one too – north',
+			label: 'North',
 			withText: true,
 			keystroke: 'Ctrl+N',
 			tooltip: true,
 			tooltipPosition: 'n'
+		} ),
+		button( {
+			label: 'West',
+			withText: true,
+			keystroke: 'Ctrl+N',
+			tooltip: true,
+			tooltipPosition: 'w'
+		} ),
+		button( {
+			label: 'East',
+			withText: true,
+			keystroke: 'Ctrl+N',
+			tooltip: true,
+			tooltipPosition: 'e'
+		} ),
+		button( {
+			label: 'South East',
+			withText: true,
+			keystroke: 'Ctrl+N',
+			tooltip: true,
+			tooltipPosition: 'se'
+		} ),
+		button( {
+			label: 'South West',
+			withText: true,
+			keystroke: 'Ctrl+N',
+			tooltip: true,
+			tooltipPosition: 'sw'
 		} )
+	] ) );
+
+	// --- With spinner ------------------------------------------------------------
+
+	const buttonWithSpinner = button( {
+		label: 'Button with spinner',
+		withText: false
+	} );
+
+	const spinnerView = new SpinnerView();
+	spinnerView.isVisible = true;
+
+	buttonWithSpinner.children.add( spinnerView );
+
+	ui.buttonSpinner.add( toolbar( [
+		buttonWithSpinner
 	] ) );
 }
 
@@ -266,7 +309,7 @@ function renderDropdown() {
 			label: 'On with an icon',
 			withText: true,
 			isOn: true,
-			icon: boldIcon
+			icon: IconBold
 		} )
 	} );
 
@@ -275,7 +318,7 @@ function renderDropdown() {
 		model: new Model( {
 			label: 'Icon and key',
 			withText: true,
-			icon: boldIcon,
+			icon: IconBold,
 			keystroke: 'Shift+Tab',
 			withKeystroke: true
 		} )
@@ -287,7 +330,7 @@ function renderDropdown() {
 			label: 'On with a keystroke',
 			withText: true,
 			isOn: true,
-			icon: boldIcon,
+			icon: IconBold,
 			keystroke: 'Ctrl+A',
 			withKeystroke: true
 		} )
@@ -322,7 +365,7 @@ function renderDropdown() {
 		model: new Model( {
 			label: 'Bold',
 			withText: true,
-			icon: boldIcon
+			icon: IconBold
 		} )
 	} );
 
@@ -331,7 +374,7 @@ function renderDropdown() {
 		model: new Model( {
 			label: 'This item is on',
 			withText: true,
-			icon: boldIcon,
+			icon: IconBold,
 			isOn: true
 		} )
 	} );
@@ -341,7 +384,7 @@ function renderDropdown() {
 		model: new Model( {
 			label: 'Disabled',
 			withText: true,
-			icon: boldIcon,
+			icon: IconBold,
 			isEnabled: false
 		} )
 	} );
@@ -367,12 +410,12 @@ function renderDropdown() {
 				button( {
 					withText: false,
 					label: 'foo',
-					icon: boldIcon
+					icon: IconBold
 				} ),
 				button( {
 					withText: false,
 					label: 'foo',
-					icon: italicIcon
+					icon: IconBold
 				} )
 			]
 		} ),
@@ -384,13 +427,13 @@ function renderDropdown() {
 					withText: false,
 					isEnabled: false,
 					label: 'foo',
-					icon: boldIcon
+					icon: IconBold
 				} ),
 				button( {
 					withText: false,
 					isEnabled: false,
 					label: 'foo',
-					icon: italicIcon
+					icon: IconItalic
 				} )
 			]
 		} )
@@ -401,7 +444,7 @@ function renderToolbar() {
 	// --- Text ------------------------------------------------------------
 
 	ui.toolbarText.add( toolbar( [
-		icon( boldIcon ),
+		icon( IconBold ),
 		text()
 	] ) );
 
@@ -412,13 +455,13 @@ function renderToolbar() {
 		text(),
 		button( {
 			label: 'Button with an icon',
-			icon: boldIcon
+			icon: IconBold
 		} ),
 		listDropdown(),
 		splitButtonDropdown( {
 			label: 'Split button dropdown',
 			withText: false,
-			icon: boldIcon
+			icon: IconBold
 		} ),
 		button(),
 		switchbutton( {
@@ -435,7 +478,7 @@ function renderToolbar() {
 		} ),
 		button( {
 			label: 'Button with an icon',
-			icon: boldIcon
+			icon: IconBold
 		} )
 	] ) );
 
@@ -459,12 +502,12 @@ function renderToolbar() {
 		toolbarSeparator(),
 		button( {
 			label: 'Foo',
-			icon: boldIcon
+			icon: IconBold
 		} ),
 		toolbarSeparator(),
 		button( {
 			label: 'Bar RTL',
-			icon: boldIcon
+			icon: IconBold
 		} )
 	] ) );
 
@@ -476,15 +519,15 @@ function renderToolbar() {
 		toolbarNewLine(),
 		button( {
 			label: 'Foo',
-			icon: boldIcon
+			icon: IconBold
 		} ),
 		button( {
 			label: 'Bar',
-			icon: boldIcon
+			icon: IconBold
 		} ),
 		button( {
 			label: 'Baz',
-			icon: boldIcon
+			icon: IconBold
 		} )
 	] ) );
 
@@ -492,16 +535,16 @@ function renderToolbar() {
 
 	const compactToolbar = toolbar( [
 		button( {
-			icon: boldIcon,
+			icon: IconBold,
 			withText: false
 		} ),
 		button( {
-			icon: italicIcon,
+			icon: IconItalic,
 			withText: false,
 			isOn: true
 		} ),
 		button( {
-			icon: cancelIcon,
+			icon: IconCancel,
 			withText: false
 		} )
 	] );
@@ -515,7 +558,7 @@ function renderInput() {
 	ui.inputLabeled.add( input() );
 	ui.inputReadOnly.add( input( {
 		label: 'A read–only input',
-		isReadOnly: true,
+		isEnabled: false,
 		value: 'Read–only input value'
 	} ) );
 }
@@ -562,6 +605,8 @@ function switchbutton( {
 	const button = new SwitchButtonView();
 
 	button.set( { label, isEnabled, isOn, withText, icon, keystroke, tooltip, tooltipPosition } );
+
+	button.on( 'execute', () => ( button.isOn = !button.isOn ) );
 
 	return button;
 }
@@ -634,14 +679,14 @@ function toolbarNewLine() {
 
 function input( {
 	label = 'Labeled input',
-	isReadOnly = false,
+	isEnabled = true,
 	value = 'The value of the input'
 } = {} ) {
-	const labeledInput = new LabeledFieldView( {}, createLabeledInputText );
+	const labeledField = new LabeledFieldView( {}, createLabeledInputText );
 
-	labeledInput.fieldView.set( { isReadOnly, label, value } );
+	labeledField.set( { isEnabled, label, value } );
 
-	return labeledInput;
+	return labeledField;
 }
 
 function setManualTestDirection( direction ) {

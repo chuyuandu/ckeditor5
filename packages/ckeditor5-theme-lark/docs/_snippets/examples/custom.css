@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 :root {
@@ -53,6 +53,11 @@
 	--ck-color-dropdown-panel-background: var(--ck-custom-background);
 	--ck-color-dropdown-panel-border: var(--ck-custom-foreground);
 
+	/* -- Overrides the default .ck-dialog class colors. ----------------------------------- */
+
+	--ck-color-dialog-background: var(--ck-custom-background);
+	--ck-color-dialog-form-header-border: var(--ck-custom-border);
+
 	/* -- Overrides the default .ck-splitbutton class colors. ----------------------------------- */
 
 	--ck-color-split-button-hover-background: var(--ck-color-button-default-hover-background);
@@ -60,12 +65,16 @@
 
 	/* -- Overrides the default .ck-input class colors. ----------------------------------------- */
 
-	--ck-color-input-background: var(--ck-custom-foreground);
+	--ck-color-input-background: var(--ck-custom-background);
 	--ck-color-input-border: hsl(257, 3%, 43%);
 	--ck-color-input-text: hsl(0, 0%, 98%);
 	--ck-color-input-disabled-background: hsl(255, 4%, 21%);
 	--ck-color-input-disabled-border: hsl(250, 3%, 38%);
-	--ck-color-input-disabled-text: hsl(0, 0%, 46%);
+	--ck-color-input-disabled-text: hsl(0, 0%, 78%);
+
+	/* -- Overrides the default .ck-labeled-field-view class colors. ---------------------------- */
+
+	--ck-color-labeled-field-label-background: var(--ck-custom-background);
 
 	/* -- Overrides the default .ck-list class colors. ------------------------------------------ */
 

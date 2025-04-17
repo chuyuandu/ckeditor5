@@ -1,61 +1,55 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window, document, console, ClassicEditor, SpecialCharactersEssentials */
+import { SpecialCharactersEssentials } from 'ckeditor5';
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { SpecialCharactersEditor } from './special-characters-source.js';
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-
-function SpecialCharactersArrowsExtended( editor ) {
-	editor.plugins.get( 'SpecialCharacters' ).addItems( 'Arrows', [
-		{ title: 'simple arrow left', character: '←' },
-		{ title: 'simple arrow up', character: '↑' },
-		{ title: 'simple arrow right', character: '→' },
-		{ title: 'simple arrow down', character: '↓' }
+function SpecialCharactersExtended( editor ) {
+	editor.plugins.get( 'SpecialCharacters' ).addItems( 'Mathematical', [
+		{ title: 'alpha', character: 'α' },
+		{ title: 'beta', character: 'β' },
+		{ title: 'gamma', character: 'γ' }
 	] );
 }
 
-ClassicEditor
+SpecialCharactersEditor
 	.create( document.querySelector( '#snippet-special-characters-extended-category' ), {
-		extraPlugins: [ SpecialCharactersEssentials, SpecialCharactersArrowsExtended ],
+		extraPlugins: [ SpecialCharactersEssentials, SpecialCharactersExtended ],
 		toolbar: {
 			items: [
-				'heading',
-				'|',
-				'bold',
-				'italic',
-				'bulletedList',
-				'numberedList',
-				'|',
-				'fontColor',
-				'fontBackgroundColor',
-				'|',
-				'outdent',
-				'indent',
-				'|',
-				'specialCharacters',
-				'link',
-				'imageUpload',
-				'insertTable',
-				'|',
-				'undo',
-				'redo'
-			],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed', 'specialCharacters',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		},
 		image: {
-			styles: [
-				'full',
-				'alignLeft',
-				'alignRight'
-			],
 			toolbar: [
-				'imageStyle:alignLeft',
-				'imageStyle:full',
-				'imageStyle:alignRight',
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
 				'|',
-				'imageTextAlternative'
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'ckboxImageEdit'
 			]
 		},
 		table: {

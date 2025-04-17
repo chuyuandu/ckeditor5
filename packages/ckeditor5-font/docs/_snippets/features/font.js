@@ -1,38 +1,54 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
+import {
+	TOKEN_URL,
+	CS_CONFIG,
+	getViewportTopOffsetConfig,
+	attachTourBalloon,
+	findToolbarItem
+} from '@snippets/index.js';
+import { FontEditor } from './build-font-source.js';
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-
-ClassicEditor
+FontEditor
 	.create( document.querySelector( '#snippet-font' ), {
 		cloudServices: CS_CONFIG,
 		toolbar: {
 			items: [
-				'heading',
+				'undo', 'redo', '|', 'heading',
+				'|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
 				'|',
-				'fontSize',
-				'fontFamily',
-				'fontColor',
-				'fontBackgroundColor',
-				'|',
-				'bulletedList',
-				'numberedList',
-				'|',
-				'outdent',
-				'indent',
-				'|',
-				'undo',
-				'redo'
-			],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', '|', 'outdent', 'indent'
+			]
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|',
+				'toggleImageCaption', 'imageTextAlternative', 'ckboxImageEdit'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ]
 		}
 	} )
 	.then( editor => {
 		window.editor = editor;
+
+		attachTourBalloon( {
+			target: findToolbarItem( editor.ui.view.toolbar, item => item.buttonView?.label === 'Font Size' ),
+			text: 'Click to change font size, family or colors.',
+			editor
+		} );
 	} )
 	.catch( err => {
 		console.error( err.stack );

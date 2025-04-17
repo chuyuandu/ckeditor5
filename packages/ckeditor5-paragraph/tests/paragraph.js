@@ -1,21 +1,21 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Paragraph from '../src/paragraph';
-import ParagraphCommand from '../src/paragraphcommand';
-import InsertParagraphCommand from '../src/insertparagraphcommand';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
+import Paragraph from '../src/paragraph.js';
+import ParagraphCommand from '../src/paragraphcommand.js';
+import InsertParagraphCommand from '../src/insertparagraphcommand.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
 import {
 	getData as getModelData,
 	setData as setModelData,
 	stringify as stringifyModel
-} from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+} from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
-import ModelDocumentFragment from '@ckeditor/ckeditor5-engine/src/model/documentfragment';
-import ModelText from '@ckeditor/ckeditor5-engine/src/model/text';
+import ModelDocumentFragment from '@ckeditor/ckeditor5-engine/src/model/documentfragment.js';
+import ModelText from '@ckeditor/ckeditor5-engine/src/model/text.js';
 
 describe( 'Paragraph feature', () => {
 	let model, editor, doc, root;
@@ -33,6 +33,14 @@ describe( 'Paragraph feature', () => {
 
 	it( 'should be loaded', () => {
 		expect( editor.plugins.get( Paragraph ) ).to.be.instanceOf( Paragraph );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( Paragraph.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( Paragraph.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should set proper schema rules', () => {
@@ -76,8 +84,7 @@ describe( 'Paragraph feature', () => {
 			} );
 
 			it( 'should autoparagraph any inline element', () => {
-				editor.model.schema.register( 'inline', { allowWhere: '$text' } );
-				editor.model.schema.extend( '$text', { allowIn: 'inline' } );
+				editor.model.schema.register( 'inline', { allowWhere: '$text', allowChildren: '$text' } );
 
 				editor.conversion.for( 'downcast' ).elementToElement( { model: 'inline', view: 'span' } );
 				editor.conversion.for( 'upcast' ).elementToElement( { model: 'inline', view: 'span' } );
@@ -89,8 +96,7 @@ describe( 'Paragraph feature', () => {
 			} );
 
 			it( 'should autoparagraph any inline element with children', () => {
-				editor.model.schema.register( 'inline', { allowWhere: '$text' } );
-				editor.model.schema.extend( '$text', { allowIn: 'inline' } );
+				editor.model.schema.register( 'inline', { allowWhere: '$text', allowChildren: '$text' } );
 
 				editor.conversion.for( 'downcast' ).elementToElement( { model: 'inline', view: 'span' } );
 				editor.conversion.for( 'upcast' ).elementToElement( { model: 'inline', view: 'span' } );

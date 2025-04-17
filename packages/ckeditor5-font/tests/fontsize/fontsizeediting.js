@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import FontSizeEditing from './../../src/fontsize/fontsizeediting';
+import FontSizeEditing from './../../src/fontsize/fontsizeediting.js';
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'FontSizeEditing', () => {
 	let editor, doc;
@@ -26,12 +26,20 @@ describe( 'FontSizeEditing', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		editor.destroy();
+	afterEach( async () => {
+		await editor.destroy();
 	} );
 
 	it( 'should have pluginName', () => {
 		expect( FontSizeEditing.pluginName ).to.equal( 'FontSizeEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( FontSizeEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( FontSizeEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should set proper schema rules', () => {
@@ -76,7 +84,7 @@ describe( 'FontSizeEditing', () => {
 								'10px',
 								12,
 								{
-									model: 14,
+									model: '14px',
 									title: '14px'
 								}
 							]
@@ -94,10 +102,28 @@ describe( 'FontSizeEditing', () => {
 			} );
 
 			describe( 'editing pipeline conversion', () => {
-				it( 'should pass fontSize to data', () => {
+				it( 'should pass pixel fontSize to data', () => {
 					setModelData( doc, '<paragraph>f<$text fontSize="10px">o</$text>o</paragraph>' );
 
 					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:10px;">o</span>o</p>' );
+				} );
+
+				it( 'should pass number fontSize to data', () => {
+					setModelData( doc, '<paragraph>f<$text fontSize="12">o</$text>o</paragraph>' );
+
+					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:12;">o</span>o</p>' );
+				} );
+
+				it( 'should pass percentage fontSize to data', () => {
+					setModelData( doc, '<paragraph>f<$text fontSize="6.25%">o</$text>o</paragraph>' );
+
+					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:6.25%;">o</span>o</p>' );
+				} );
+
+				it( 'should pass em fontSize to data', () => {
+					setModelData( doc, '<paragraph>f<$text fontSize="8em">o</$text>o</paragraph>' );
+
+					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:8em;">o</span>o</p>' );
 				} );
 			} );
 
@@ -110,6 +136,128 @@ describe( 'FontSizeEditing', () => {
 					expect( getModelData( doc ) ).to.equal( '<paragraph>[]f<$text fontSize="18px">o</$text>o</paragraph>' );
 
 					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:18px;">o</span>o</p>' );
+				} );
+
+				it( 'should convert from a nested element', () => {
+					const data = '<p>f<span><span><span><span style="font-size: 18px">o</span></span></span></span>o</p>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal( '<paragraph>[]f<$text fontSize="18px">o</$text>o</paragraph>' );
+
+					expect( editor.getData() ).to.equal( '<p>f<span style="font-size:18px;">o</span>o</p>' );
+				} );
+
+				it( 'should convert <font size=".."> styling', () => {
+					const data = '<font size="5">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="x-large">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:x-large;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - size = 0', () => {
+					const data = '<font size="0">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="x-small">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:x-small;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - large value clamped to size 7 equivalent', () => {
+					const data = '<font size="999">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="xxx-large">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:xxx-large;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - positive relative size', () => {
+					const data = '<font size="+3">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="xx-large">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:xx-large;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - large positive relative size', () => {
+					const data = '<font size="+999">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="xxx-large">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:xxx-large;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - negative relative size', () => {
+					const data = '<font size="-1">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="small">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:small;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should convert <font size=".."> styling - large negative relative size', () => {
+					const data = '<font size="-999">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph><$text fontSize="x-small">[]foo</$text><$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-size:x-small;">foo</span><span style="font-size:18px;">bar</span></p>'
+					);
+				} );
+
+				it( 'should not convert <font size=".."> styling - parameter outside of the range', () => {
+					const data = '<font size="1000">foo</font><span style="font-size: 18px">bar</span>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph>[]foo<$text fontSize="18px">bar</$text></paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p>foo<span style="font-size:18px;">bar</span></p>'
+					);
 				} );
 			} );
 
@@ -305,6 +453,20 @@ describe( 'FontSizeEditing', () => {
 				'<p>f<span class="text-complex">o</span>o</p>' +
 				'<p>b<span class="text-complex">a</span>r</p>' +
 				'<p>b<span class="text-complex">a</span>z</p>'
+			);
+		} );
+
+		it( 'should not convert <font size=".."> styling when supportAllValues is disabled', () => {
+			const data = '<font size="5">foo</font><span style="font-size: 18px">bar</span>';
+
+			editor.setData( data );
+
+			expect( getModelData( doc ) ).to.equal(
+				'<paragraph>[]foo<$text fontSize="18px">bar</$text></paragraph>'
+			);
+
+			expect( editor.getData() ).to.equal(
+				'<p>foo<span style="font-size:18px;">bar</span></p>'
 			);
 		} );
 	} );

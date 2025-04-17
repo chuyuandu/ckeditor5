@@ -1,17 +1,20 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-import Table from '../../../src/table';
-import TableCellProperties from '../../../src/tablecellproperties';
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
+import Table from '../../../src/table.js';
+import TableCellProperties from '../../../src/tablecellproperties.js';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import View from '@ckeditor/ckeditor5-ui/src/view.js';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview.js';
+import ClipboardPipeline from '@ckeditor/ckeditor5-clipboard/src/clipboardpipeline.js';
 
-import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview';
+import LabeledFieldView from '@ckeditor/ckeditor5-ui/src/labeledfield/labeledfieldview.js';
+import ColorInputView from '../../../src/ui/colorinputview.js';
+import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview.js';
 
 import {
 	getBorderStyleDefinitions,
@@ -21,10 +24,11 @@ import {
 	lengthFieldValidator,
 	lineWidthFieldValidator,
 	colorFieldValidator,
-	fillToolbar
-} from '../../../src/utils/ui/table-properties';
-import Collection from '@ckeditor/ckeditor5-utils/src/collection';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+	fillToolbar,
+	getLabeledColorInputCreator
+} from '../../../src/utils/ui/table-properties.js';
+import Collection from '@ckeditor/ckeditor5-utils/src/collection.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'table utils', () => {
 	let editor, editorElement;
@@ -37,7 +41,7 @@ describe( 'table utils', () => {
 
 		return ClassicEditor
 			.create( editorElement, {
-				plugins: [ Table, TableCellProperties, Paragraph ]
+				plugins: [ Table, TableCellProperties, Paragraph, ClipboardPipeline ]
 			} )
 			.then( newEditor => {
 				editor = newEditor;
@@ -98,6 +102,8 @@ describe( 'table utils', () => {
 				expect( colorFieldValidator( '#FFF' ) ).to.be.true;
 				expect( colorFieldValidator( '#FFAA11' ) ).to.be.true;
 				expect( colorFieldValidator( 'rgb(255,123,100)' ) ).to.be.true;
+				expect( colorFieldValidator( 'RGB(255,123,100)' ) ).to.be.true;
+				expect( colorFieldValidator( 'RED' ) ).to.be.true;
 				expect( colorFieldValidator( 'red' ) ).to.be.true;
 			} );
 
@@ -241,6 +247,10 @@ describe( 'table utils', () => {
 					false
 				] );
 			} );
+
+			it( 'should set role of a button for each style', () => {
+				expect( definitions.map( ( { model: { role } } ) => role ).every( item => item === 'menuitemradio' ) ).to.be.true;
+			} );
 		} );
 
 		describe( 'fillToolbar()', () => {
@@ -336,6 +346,200 @@ describe( 'table utils', () => {
 				toolbar.items.last.fire( 'execute' );
 
 				expect( view.someProperty ).to.equal( '' );
+			} );
+
+			it( 'should toggle the property value when an active button is clicked', () => {
+				// Set the property to match one of the button values.
+				view.someProperty = 'first';
+				expect( toolbar.items.first.isOn ).to.be.true;
+
+				// Click the active button.
+				toolbar.items.first.fire( 'execute' );
+
+				// The property should be reset to undefined.
+				expect( view.someProperty ).to.be.undefined;
+
+				// Clicking the button again should set the value back.
+				toolbar.items.first.fire( 'execute' );
+				expect( view.someProperty ).to.equal( 'first' );
+			} );
+
+			describe( 'skipping "nameToValue" callback', () => {
+				let view, locale, toolbar;
+
+				beforeEach( () => {
+					locale = { t: val => val };
+					view = new View( locale );
+					view.set( 'someProperty', 'foo' );
+					toolbar = new ToolbarView( locale );
+
+					fillToolbar( {
+						view, toolbar, icons, labels,
+						propertyName: 'someProperty'
+					} );
+				} );
+
+				afterEach( () => {
+					view.destroy();
+				} );
+
+				it( 'should make the buttons change the property value upon execution', () => {
+					toolbar.items.first.fire( 'execute' );
+
+					expect( view.someProperty ).to.equal( 'first' );
+
+					toolbar.items.get( 1 ).fire( 'execute' );
+
+					expect( view.someProperty ).to.equal( 'second' );
+
+					toolbar.items.last.fire( 'execute' );
+
+					expect( view.someProperty ).to.equal( 'third' );
+				} );
+			} );
+
+			describe( 'providing "defaultValue"', () => {
+				let view, locale, toolbar;
+
+				beforeEach( () => {
+					locale = { t: val => val };
+					view = new View( locale );
+					view.set( 'someProperty', 'foo' );
+					toolbar = new ToolbarView( locale );
+
+					fillToolbar( {
+						view, toolbar, icons, labels,
+						propertyName: 'someProperty',
+						defaultValue: 'third'
+					} );
+				} );
+
+				afterEach( () => {
+					view.destroy();
+				} );
+
+				it( 'should bind button #isOn to an observable property', () => {
+					view.someProperty = '';
+
+					expect( toolbar.items.first.isOn ).to.be.false;
+					expect( toolbar.items.get( 1 ).isOn ).to.be.false;
+					expect( toolbar.items.last.isOn ).to.be.true;
+
+					view.someProperty = 'third';
+
+					expect( toolbar.items.first.isOn ).to.be.false;
+					expect( toolbar.items.get( 1 ).isOn ).to.be.false;
+					expect( toolbar.items.last.isOn ).to.be.true;
+
+					view.someProperty = 'first';
+
+					expect( toolbar.items.first.isOn ).to.be.true;
+					expect( toolbar.items.get( 1 ).isOn ).to.be.false;
+					expect( toolbar.items.last.isOn ).to.be.false;
+				} );
+			} );
+		} );
+
+		describe( 'getLabeledColorInputCreator()', () => {
+			let creator, labeledField;
+
+			const colorConfig = [
+				{
+					color: 'hsl(180, 75%, 60%)',
+					label: 'Turquoise'
+				},
+				{
+					color: 'hsl(210, 75%, 60%)',
+					label: 'Light blue'
+				}
+			];
+
+			beforeEach( () => {
+				creator = getLabeledColorInputCreator( {
+					colorConfig,
+					columns: 3,
+					colorPickerConfig: {
+						format: 'hex'
+					}
+				} );
+
+				labeledField = new LabeledFieldView( { t: () => {} }, creator );
+			} );
+
+			afterEach( () => {
+				labeledField.destroy();
+			} );
+
+			it( 'should return a function', () => {
+				expect( creator ).to.be.a( 'function' );
+			} );
+
+			it( 'should pass the options.colorConfig on', () => {
+				expect( labeledField.fieldView.options.colorDefinitions ).to.have.length( 2 );
+			} );
+
+			it( 'should pass the options.columns on', () => {
+				expect( labeledField.fieldView.options.columns ).to.equal( 3 );
+			} );
+
+			it( 'should return a ColorInputView instance', () => {
+				expect( labeledField.fieldView ).to.be.instanceOf( ColorInputView );
+			} );
+
+			it( 'should set ColorInputView#id', () => {
+				expect( labeledField.fieldView.inputView.id ).to.match( /^ck-labeled-field-view-.+/ );
+			} );
+
+			it( 'should set ColorInputView#ariaDescribedById', () => {
+				expect( labeledField.fieldView.inputView.ariaDescribedById ).to.match( /^ck-labeled-field-view-status-.+/ );
+			} );
+
+			it( 'should bind ColorInputView#isReadOnly to LabeledFieldView#isEnabled', () => {
+				labeledField.isEnabled = true;
+				expect( labeledField.fieldView.isReadOnly ).to.be.false;
+
+				labeledField.isEnabled = false;
+				expect( labeledField.fieldView.isReadOnly ).to.be.true;
+			} );
+
+			it( 'should bind ColorInputView#hasError to LabeledFieldView#errorText', () => {
+				labeledField.errorText = 'foo';
+				expect( labeledField.fieldView.hasError ).to.be.true;
+
+				labeledField.errorText = null;
+				expect( labeledField.fieldView.hasError ).to.be.false;
+			} );
+
+			it( 'should clear labeld field view #errorText upon #input event', () => {
+				labeledField.errorText = 'foo';
+
+				labeledField.fieldView.fire( 'input' );
+
+				expect( labeledField.errorText ).to.be.null;
+			} );
+
+			it( 'should bind LabeledFieldView#isEmpty to the ColorInputView instance', () => {
+				labeledField.fieldView.isEmpty = true;
+				expect( labeledField.isEmpty ).to.be.true;
+
+				labeledField.fieldView.isEmpty = false;
+				expect( labeledField.isEmpty ).to.be.false;
+			} );
+
+			it( 'should bind LabeledFieldView#isFocused to the ColorInputView instance', () => {
+				labeledField.fieldView.isFocused = true;
+				expect( labeledField.isFocused ).to.be.true;
+
+				labeledField.fieldView.isFocused = false;
+				expect( labeledField.isFocused ).to.be.false;
+			} );
+
+			it( 'should have proper format in color picker', () => {
+				const panelView = labeledField.fieldView.dropdownView.panelView;
+				const colorPicker = panelView.children.get( 0 ).colorPickerFragmentView.colorPickerView;
+
+				colorPicker.color = 'hsl(180, 75%, 60%)';
+				expect( colorPicker.color ).to.equal( '#4CE6E6' );
 			} );
 		} );
 	} );

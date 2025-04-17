@@ -1,41 +1,78 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document, setTimeout */
-
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-
-import Markdown from '@ckeditor/ckeditor5-markdown-gfm/src/markdown';
+import {
+	ClassicEditor,
+	Code,
+	Strikethrough,
+	CloudServices,
+	CodeBlock,
+	CKBox,
+	CKBoxImageEdit,
+	HorizontalLine,
+	ImageUpload,
+	ImageInsert,
+	PictureEditing,
+	AutoImage,
+	TodoList,
+	Markdown
+} from 'ckeditor5';
+import { SourceEditingEnhanced } from 'ckeditor5-premium-features';
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	ArticlePluginSet,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
 ClassicEditor
 	.create( document.querySelector( '#snippet-markdown' ), {
-		plugins: [ ArticlePluginSet, EasyImage, Markdown ],
-		toolbar: [
-			'heading',
-			'|',
-			'bold',
-			'italic',
-			'link',
-			'bulletedList',
-			'numberedList',
-			'|',
-			'outdent',
-			'indent',
-			'|',
-			'blockQuote',
-			'undo',
-			'redo'
+		plugins: [
+			ArticlePluginSet, SourceEditingEnhanced, CKBox, CKBoxImageEdit, ImageInsert, ImageUpload, PictureEditing, AutoImage,
+			CloudServices, Markdown, Code, CodeBlock, TodoList, Strikethrough, HorizontalLine
 		],
-		image: {
-			toolbar: [ 'imageStyle:full', 'imageStyle:side', '|', 'imageTextAlternative' ]
+		toolbar: {
+			items: [
+				'undo', 'redo', '|', 'sourceEditingEnhanced', '|', 'heading',
+				'|', 'bold', 'italic', 'strikethrough', 'code',
+				'-', 'link', 'insertImage', 'insertTable', 'mediaEmbed', 'blockQuote', 'codeBlock', 'horizontalLine',
+				'|', 'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
+			],
+			shouldNotGroupWhenFull: true
 		},
-		cloudServices: CS_CONFIG
+		image: {
+			toolbar: [
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'|',
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'ckboxImageEdit'
+			]
+		},
+		codeBlock: {
+			languages: [
+				{ language: 'css', label: 'CSS' },
+				{ language: 'html', label: 'HTML' },
+				{ language: 'javascript', label: 'JavaScript' },
+				{ language: 'php', label: 'PHP' }
+			]
+		},
+		cloudServices: CS_CONFIG,
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
+		}
 	} )
 	.then( editor => {
 		window.editor = editor;
@@ -46,7 +83,7 @@ ClassicEditor
 			outputElement.innerText = editor.getData();
 		} );
 
-		// Set the initial data with delay so hightlight.js doesn't catch them.
+		// Set the initial data with delay so hightlight.js doesn't catch it.
 		setTimeout( () => {
 			outputElement.innerText = editor.getData();
 		}, 500 );

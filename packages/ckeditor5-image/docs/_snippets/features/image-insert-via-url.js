@@ -1,30 +1,57 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { ImageEditor } from './build-image-source.js';
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config.js';
+// const toolbarItems = [ ...ImageEditor.defaultConfig.toolbar.items ];
 
-ClassicEditor
+// toolbarItems.splice( toolbarItems.indexOf( 'uploadImage' ), 1, 'insertImage' );
+
+ImageEditor
 	.create( document.querySelector( '#snippet-image-insert-via-url' ), {
-		removePlugins: [ 'ImageToolbar', 'ImageCaption', 'ImageStyle', 'ImageResize', 'LinkImage' ],
+		removePlugins: [ 'ArticlePluginSet', 'ImageCaption', 'LinkImage', 'AutoImage' ],
 		toolbar: {
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+			items: [
+				'undo', 'redo',
+				'|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		},
 		image: {
-			toolbar: [ 'imageStyle:full', 'imageStyle:side', '|', 'imageTextAlternative' ],
-			upload: {
-				panel: {
-					items: [ 'insertImageViaUrl' ]
-				}
+			toolbar: [
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'|',
+				'ckboxImageEdit'
+			],
+			insert: {
+				integrations: [ 'url' ]
 			}
 		},
 		cloudServices: CS_CONFIG
 	} )
 	.then( editor => {
-		window.imageViaUrl = editor;
+		window.editorInsertImageViaUrl = editor;
 	} )
 	.catch( err => {
 		console.error( err );

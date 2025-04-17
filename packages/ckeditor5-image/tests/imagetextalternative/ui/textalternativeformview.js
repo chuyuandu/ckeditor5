@@ -1,18 +1,18 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* global Event */
+/* global document, Event */
 
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import TextAlternativeFormView from '../../../src/imagetextalternative/ui/textalternativeformview';
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import FocusCycler from '@ckeditor/ckeditor5-ui/src/focuscycler';
-import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import TextAlternativeFormView from '../../../src/imagetextalternative/ui/textalternativeformview.js';
+import View from '@ckeditor/ckeditor5-ui/src/view.js';
+import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler.js';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import FocusCycler from '@ckeditor/ckeditor5-ui/src/focuscycler.js';
+import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'TextAlternativeFormView', () => {
 	let view;
@@ -28,7 +28,9 @@ describe( 'TextAlternativeFormView', () => {
 			view.render();
 
 			expect( view.element.classList.contains( 'ck' ) ).to.be.true;
+			expect( view.element.classList.contains( 'ck-form' ) ).to.be.true;
 			expect( view.element.classList.contains( 'ck-text-alternative-form' ) ).to.be.true;
+			expect( view.element.classList.contains( 'ck-responsive-form' ) ).to.be.true;
 			expect( view.element.getAttribute( 'tabindex' ) ).to.equal( '-1' );
 		} );
 
@@ -43,12 +45,9 @@ describe( 'TextAlternativeFormView', () => {
 		it( 'should create child views', () => {
 			expect( view.labeledInput ).to.be.instanceOf( View );
 			expect( view.saveButtonView ).to.be.instanceOf( View );
-			expect( view.cancelButtonView ).to.be.instanceOf( View );
+			expect( view.backButtonView ).to.be.instanceOf( View );
 
 			view.render();
-
-			expect( view.saveButtonView.element.classList.contains( 'ck-button-save' ) ).to.be.true;
-			expect( view.cancelButtonView.element.classList.contains( 'ck-button-cancel' ) ).to.be.true;
 		} );
 
 		it( 'should create #_focusCycler instance', () => {
@@ -59,10 +58,18 @@ describe( 'TextAlternativeFormView', () => {
 			expect( view._focusables ).to.be.instanceOf( ViewCollection );
 		} );
 
-		it( 'should fire `cancel` event on cancelButtonView#execute', () => {
+		it( 'should create header element at the top', () => {
+			view.render();
+
+			const header = view.children.first;
+
+			expect( header.children.last.element.classList.contains( 'ck-form__header__label' ) ).to.be.true;
+		} );
+
+		it( 'should fire `cancel` event on backButtonView#execute', () => {
 			const spy = sinon.spy();
 			view.on( 'cancel', spy );
-			view.cancelButtonView.fire( 'execute' );
+			view.backButtonView.fire( 'execute' );
 
 			sinon.assert.calledOnce( spy );
 		} );
@@ -82,25 +89,31 @@ describe( 'TextAlternativeFormView', () => {
 				view.render();
 
 				expect( view._focusables.map( f => f ) ).to.have.members( [
+					view.backButtonView,
 					view.labeledInput,
-					view.saveButtonView,
-					view.cancelButtonView
+					view.saveButtonView
 				] );
 			} );
 
 			it( 'should register child views\' #element in #focusTracker', () => {
-				const spy = testUtils.sinon.spy( FocusTracker.prototype, 'add' );
+				const spy = testUtils.sinon.spy( view.focusTracker, 'add' );
 
 				view.render();
 
-				sinon.assert.calledWithExactly( spy.getCall( 0 ), view.labeledInput.element );
-				sinon.assert.calledWithExactly( spy.getCall( 1 ), view.saveButtonView.element );
-				sinon.assert.calledWithExactly( spy.getCall( 2 ), view.cancelButtonView.element );
+				sinon.assert.calledWithExactly( spy.getCall( 0 ), view.backButtonView.element );
+				sinon.assert.calledWithExactly( spy.getCall( 1 ), view.labeledInput.element );
+				sinon.assert.calledWithExactly( spy.getCall( 2 ), view.saveButtonView.element );
 			} );
 
 			describe( 'activates keyboard navigation in the form', () => {
 				beforeEach( () => {
 					view.render();
+					document.body.appendChild( view.element );
+				} );
+
+				afterEach( () => {
+					view.element.remove();
+					view.destroy();
 				} );
 
 				it( 'so "tab" focuses the next focusable item', () => {
@@ -132,7 +145,7 @@ describe( 'TextAlternativeFormView', () => {
 
 					// Mock the cancel button is focused.
 					view.focusTracker.isFocused = true;
-					view.focusTracker.focusedElement = view.cancelButtonView.element;
+					view.focusTracker.focusedElement = view.backButtonView.element;
 
 					const spy = sinon.spy( view.saveButtonView, 'focus' );
 
@@ -142,6 +155,24 @@ describe( 'TextAlternativeFormView', () => {
 					sinon.assert.calledOnce( spy );
 				} );
 			} );
+		} );
+	} );
+
+	describe( 'destroy()', () => {
+		it( 'should destroy the FocusTracker instance', () => {
+			const destroySpy = sinon.spy( view.focusTracker, 'destroy' );
+
+			view.destroy();
+
+			sinon.assert.calledOnce( destroySpy );
+		} );
+
+		it( 'should destroy the KeystrokeHandler instance', () => {
+			const destroySpy = sinon.spy( view.keystrokes, 'destroy' );
+
+			view.destroy();
+
+			sinon.assert.calledOnce( destroySpy );
 		} );
 	} );
 

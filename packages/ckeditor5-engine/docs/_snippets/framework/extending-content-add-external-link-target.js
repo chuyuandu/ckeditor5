@@ -1,11 +1,13 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md.
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
-
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
+import {
+	CS_CONFIG,
+	ClassicEditor,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
 function AddTargetToExternalLinks( editor ) {
 	editor.conversion.for( 'downcast' ).add( dispatcher => {
@@ -35,8 +37,10 @@ ClassicEditor
 	.create( document.querySelector( '#snippet-link-external' ), {
 		cloudServices: CS_CONFIG,
 		extraPlugins: [ AddTargetToExternalLinks ],
-		toolbar: {
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
 		}
 	} )
 	.then( editor => {

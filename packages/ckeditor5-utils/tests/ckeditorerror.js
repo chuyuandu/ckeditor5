@@ -1,12 +1,15 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* eslint-disable ckeditor5-rules/ckeditor-error-message */
 
-import { default as CKEditorError, DOCUMENTATION_URL } from '../src/ckeditorerror';
-import { expectToThrowCKEditorError } from './_utils/utils';
+/* global console */
+
+import { default as CKEditorError, DOCUMENTATION_URL, logError, logWarning } from '../src/ckeditorerror.js';
+import { expectToThrowCKEditorError } from './_utils/utils.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'CKEditorError', () => {
 	it( 'inherits from Error', () => {
@@ -33,7 +36,10 @@ describe( 'CKEditorError', () => {
 		const data = { bar: 1 };
 		const error = new CKEditorError( 'foo', null, data );
 
-		expect( error ).to.have.property( 'message', 'foo {"bar":1}' );
+		expect( error ).to.have.property(
+			'message',
+			`foo {"bar":1}\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+		);
 		expect( error ).to.have.property( 'data', data );
 	} );
 
@@ -59,25 +65,53 @@ describe( 'CKEditorError', () => {
 		};
 		const error = new CKEditorError( 'foo', null, data );
 
-		expect( error ).to.have.property( 'message', 'foo {"bar":"a","bom":{"x":1},"bim":10}' );
+		expect( error ).to.have.property(
+			'message',
+			`foo {"bar":"a","bom":{"x":1},"bim":10}\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+		);
+		expect( error ).to.have.property( 'data', data );
+	} );
+
+	it( 'appends stringified data to the message if stringified object contains circular references', () => {
+		const data = { foo: 'bar' };
+
+		data.bar = data;
+
+		const error = new CKEditorError( 'foo', null, data );
+
+		expect( error ).to.have.property(
+			'message',
+			`foo {"foo":"bar","bar":"[object Object]"}\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+		);
+		expect( error ).to.have.property( 'data', data );
+	} );
+
+	it( 'appends stringified data to the message if stringified object contains multiple exact same circular references', () => {
+		const data = { foo: 'bar' };
+
+		data.bar = [ data, data ];
+
+		const error = new CKEditorError( 'foo', null, data );
+
+		expect( error ).to.have.property(
+			'message',
+			`foo {"foo":"bar","bar":["[object Object]","[object Object]"]}\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+		);
 		expect( error ).to.have.property( 'data', data );
 	} );
 
 	it( 'contains a link which leads to the documentation', () => {
 		const error = new CKEditorError( 'model-schema-no-item', null );
 
-		const errorMessage = 'model-schema-no-item' +
-			` Read more: ${ DOCUMENTATION_URL }#error-model-schema-no-item\n`;
+		const errorMessage = `model-schema-no-item\nRead more: ${ DOCUMENTATION_URL }#error-model-schema-no-item`;
 
 		expect( error ).to.have.property( 'message', errorMessage );
 	} );
 
-	it( 'link to documentation is added before the additional data message', () => {
+	it( 'link to documentation is added after the additional data message', () => {
 		const error = new CKEditorError( 'model-schema-no-item', null, { foo: 1, bar: 2 } );
 
-		const errorMessage = 'model-schema-no-item ' +
-			`Read more: ${ DOCUMENTATION_URL }#error-model-schema-no-item\n ` +
-			'{"foo":1,"bar":2}';
+		const errorMessage = `model-schema-no-item {"foo":1,"bar":2}\nRead more: ${ DOCUMENTATION_URL }#error-model-schema-no-item`;
 
 		expect( error ).to.have.property( 'message', errorMessage );
 	} );
@@ -109,6 +143,68 @@ describe( 'CKEditorError', () => {
 			expectToThrowCKEditorError( () => {
 				CKEditorError.rethrowUnexpectedError( error, context );
 			}, /foo/, context );
+		} );
+	} );
+
+	describe( 'logWarning()', () => {
+		beforeEach( () => {
+			testUtils.sinon.stub( console, 'warn' );
+		} );
+
+		afterEach( () => {
+			console.warn.restore();
+		} );
+
+		it( 'should log warning with data and link to the documentation', () => {
+			logWarning( 'foo', { name: 'foo' } );
+
+			sinon.assert.calledOnce( console.warn );
+			sinon.assert.calledWithExactly( console.warn,
+				sinon.match( 'foo' ),
+				{ name: 'foo' },
+				`\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+			);
+		} );
+
+		it( 'should log warning without data and with a link to the documentation', () => {
+			logWarning( 'foo' );
+
+			sinon.assert.calledOnce( console.warn );
+			sinon.assert.calledWithExactly( console.warn,
+				sinon.match( 'foo' ),
+				`\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+			);
+		} );
+	} );
+
+	describe( 'logError()', () => {
+		beforeEach( () => {
+			testUtils.sinon.stub( console, 'error' );
+		} );
+
+		afterEach( () => {
+			console.error.restore();
+		} );
+
+		it( 'should log error with data and link to the documentation', () => {
+			logError( 'foo', { name: 'foo' } );
+
+			sinon.assert.calledOnce( console.error );
+			sinon.assert.calledWithExactly( console.error,
+				sinon.match( 'foo' ),
+				{ name: 'foo' },
+				`\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+			);
+		} );
+
+		it( 'should log error without data and with a link to the documentation', () => {
+			logError( 'foo' );
+
+			sinon.assert.calledOnce( console.error );
+			sinon.assert.calledWithExactly( console.error,
+				sinon.match( 'foo' ),
+				`\nRead more: ${ DOCUMENTATION_URL }#error-foo`
+			);
 		} );
 	} );
 } );

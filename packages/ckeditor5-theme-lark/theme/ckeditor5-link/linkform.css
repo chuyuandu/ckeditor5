@@ -1,123 +1,57 @@
 /*
- * Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-@import "@ckeditor/ckeditor5-ui/theme/mixins/_rwd.css";
 @import "@ckeditor/ckeditor5-ui/theme/mixins/_dir.css";
+@import "@ckeditor/ckeditor5-ui/theme/mixins/_rwd.css";
 
-.ck.ck-link-form {
-	padding: var(--ck-spacing-standard);
+:root {
+	--ck-link-panel-width: 340px;
+	/* The height of the text inside the link providers list button. */
+	--ck-link-provider-list-item-text-height: calc(var(--ck-line-height-base) * var(--ck-font-size-base));
+	/* The height of the link providers list item contained paddings. */
+	--ck-link-provider-list-item-height: calc(var(--ck-link-provider-list-item-text-height) + var(--ck-spacing-small) + var(--ck-spacing-small));
+}
 
-	&:focus {
-		/* https://github.com/ckeditor/ckeditor5-link/issues/90 */
-		outline: none;
-	}
-
-	@mixin ck-dir ltr {
-		& > :not(:first-child) {
-			margin-left: var(--ck-spacing-standard);
-		}
-	}
-
-	@mixin ck-dir rtl {
-		& > :not(:last-child) {
-			margin-left: var(--ck-spacing-standard);
-		}
-	}
-
-	@mixin ck-media-phone {
-		padding: 0;
-		width: calc(.8 * var(--ck-input-text-width));
-
-		& .ck-labeled-field-view {
-			margin: var(--ck-spacing-standard) var(--ck-spacing-standard) 0;
-
-			& .ck-input-text {
-				min-width: 0;
-				width: 100%;
-			}
-		}
-
-		& .ck-button {
-			padding: var(--ck-spacing-standard);
-			margin-top: var(--ck-spacing-standard);
-
-			border-radius: 0;
-			border: 0;
-			border-top: 1px solid var(--ck-color-base-border);
-
-			@mixin ck-dir ltr {
-				margin-left: 0;
-
-				&:first-of-type {
-					border-right: 1px solid var(--ck-color-base-border);
-				}
-			}
-
-			@mixin ck-dir rtl {
-				margin-left: 0;
-
-				&:last-of-type {
-					border-right: 1px solid var(--ck-color-base-border);
-				}
-			}
-		}
+@mixin ck-media-phone {
+	:root {
+		--ck-link-panel-width: 300px;
 	}
 }
 
-/*
- * Style link form differently when manual decorators are available.
- * See: https://github.com/ckeditor/ckeditor5-link/issues/186.
- */
-.ck.ck-link-form_layout-vertical {
-	padding: 0;
-	min-width: var(--ck-input-text-width);
+/* Generic class that wraps each link balloon view. */
+.ck.ck-form.ck-link-form {
+	width: var(--ck-link-panel-width);
+	padding-bottom: 0;
 
-	& .ck-labeled-field-view {
-		margin: var(--ck-spacing-standard) var(--ck-spacing-standard) var(--ck-spacing-small);
-
-		& .ck-input-text {
-			min-width: 0;
-			width: 100%;
+	&.ck-responsive-form {
+		& .ck-labeled-field-view {
+			@mixin ck-media-phone {
+				margin: 0;
+			}
 		}
 	}
 
-	& .ck-button {
-		padding: var(--ck-spacing-standard);
-		margin: 0;
-		border-radius: 0;
-		border: 0;
+	& .ck-link-form__providers-list {
 		border-top: 1px solid var(--ck-color-base-border);
-		width: 50%;
 
-		@mixin ck-dir ltr {
-			margin-left: 0;
-
-			&:first-of-type {
-				border-right: 1px solid var(--ck-color-base-border);
-			}
+		/* The list should be scrollable when there are more than 4 items. */
+		&:has(.ck-list__item:nth-child(n + 5)) {
+			overflow: auto;
+			/* Scroll should appear when there are more than 5 item on the list.
+			* var(--ck-spacing-large) - is a form padding.
+			* 1px - is a border width. */
+			max-height: calc(var(--ck-link-provider-list-item-height) * 4 + var(--ck-spacing-large) + 1px);
 		}
 
-		@mixin ck-dir rtl {
-			margin-left: 0;
+		& .ck-link__button {
+			padding: var(--ck-spacing-small) var(--ck-spacing-large);
+			border-radius: 0;
 
-			&:last-of-type {
-				border-right: 1px solid var(--ck-color-base-border);
-			}
-		}
-	}
-
-	/* Using additional `.ck` class for stronger CSS specificity than `.ck.ck-link-form > :not(:first-child)`. */
-	& .ck.ck-list {
-		margin-left: 0;
-
-		& .ck-button.ck-switchbutton {
-			border: 0;
-			width: 100%;
-
-			&:hover {
-				background: none;
+			& > .ck-button__label {
+				overflow: hidden;
+				text-overflow: ellipsis;
 			}
 		}
 	}

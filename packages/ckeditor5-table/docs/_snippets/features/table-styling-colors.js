@@ -1,9 +1,17 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, CKEditorPlugins, console, window, document */
+import {
+	TableProperties,
+	TableCellProperties
+} from 'ckeditor5';
+import {
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { TableEditor } from './build-table-source.js';
 
 const customColorPalette = [
 	{
@@ -76,11 +84,11 @@ const customColorPalette = [
 	},
 	{
 		color: 'hsl(0, 0%, 62%)',
-		label: 'Grey'
+		label: 'Gray'
 	},
 	{
 		color: 'hsl(200, 18%, 46%)',
-		label: 'Blue Grey'
+		label: 'Blue Gray'
 	},
 	{
 		color: 'hsl(200, 18%, 100%)',
@@ -88,11 +96,11 @@ const customColorPalette = [
 	}
 ];
 
-ClassicEditor
+TableEditor
 	.create( document.querySelector( '#snippet-table-styling-colors' ), {
 		extraPlugins: [
-			CKEditorPlugins.TableProperties,
-			CKEditorPlugins.TableCellProperties
+			TableProperties,
+			TableCellProperties
 		],
 		table: {
 			contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties' ],
@@ -107,11 +115,25 @@ ClassicEditor
 		},
 		image: {
 			toolbar: [
-				'imageStyle:full',
-				'imageStyle:side',
+				'imageStyle:inline',
+				'imageStyle:block',
+				'imageStyle:wrapText',
 				'|',
-				'imageTextAlternative'
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'ckboxImageEdit'
 			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		}
 	} )
 	.then( editor => {

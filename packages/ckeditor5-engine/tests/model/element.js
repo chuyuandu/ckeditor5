@@ -1,14 +1,14 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Node from '../../src/model/node';
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import TextProxy from '../../src/model/textproxy';
-import count from '@ckeditor/ckeditor5-utils/src/count';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import Node from '../../src/model/node.js';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import TextProxy from '../../src/model/textproxy.js';
+import count from '@ckeditor/ckeditor5-utils/src/count.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'Element', () => {
 	describe( 'constructor()', () => {
@@ -56,10 +56,10 @@ describe( 'Element', () => {
 		} );
 
 		it( 'should return false for other accept values', () => {
-			expect( element.is( 'element', 'image' ) ).to.be.false;
-			expect( element.is( 'model:element', 'image' ) ).to.be.false;
-			expect( element.is( 'element', 'image' ) ).to.be.false;
-			expect( element.is( 'model:image' ) ).to.be.false;
+			expect( element.is( 'element', 'imageBlock' ) ).to.be.false;
+			expect( element.is( 'model:element', 'imageBlock' ) ).to.be.false;
+			expect( element.is( 'element', 'imageBlock' ) ).to.be.false;
+			expect( element.is( 'model:imageBlock' ) ).to.be.false;
 			expect( element.is( '$text' ) ).to.be.false;
 			expect( element.is( 'model:$text' ) ).to.be.false;
 			expect( element.is( '$textProxy' ) ).to.be.false;
@@ -122,11 +122,11 @@ describe( 'Element', () => {
 
 		it( 'should accept arrays and strings', () => {
 			const element = new Element( 'elem' );
-			element._insertChild( 0, [ new Element( 'image' ), 'xy', new Element( 'list' ) ] );
+			element._insertChild( 0, [ new Element( 'imageBlock' ), 'xy', new Element( 'list' ) ] );
 
 			expect( element.childCount ).to.equal( 3 );
 			expect( element.maxOffset ).to.equal( 4 );
-			expect( element.getChild( 0 ).name ).to.equal( 'image' );
+			expect( element.getChild( 0 ).name ).to.equal( 'imageBlock' );
 			expect( element.getChild( 1 ).data ).to.equal( 'xy' );
 			expect( element.getChild( 2 ).name ).to.equal( 'list' );
 		} );
@@ -170,7 +170,7 @@ describe( 'Element', () => {
 
 	describe( '_removeChildren', () => {
 		it( 'should remove children from the element and return them as an array', () => {
-			const element = new Element( 'elem', [], [ new Text( 'foobar' ), new Element( 'image' ) ] );
+			const element = new Element( 'elem', [], [ new Text( 'foobar' ), new Element( 'imageBlock' ) ] );
 			const removed = element._removeChildren( 1, 1 );
 
 			expect( element.childCount ).to.equal( 1 );
@@ -179,19 +179,41 @@ describe( 'Element', () => {
 			expect( element.getChild( 0 ).data ).to.equal( 'foobar' );
 
 			expect( removed.length ).to.equal( 1 );
-			expect( removed[ 0 ].name ).to.equal( 'image' );
+			expect( removed[ 0 ].name ).to.equal( 'imageBlock' );
 		} );
 
 		it( 'should remove one child when second parameter is not specified', () => {
-			const element = new Element( 'element', [], [ new Text( 'foo' ), new Element( 'image' ) ] );
+			const element = new Element( 'element', [], [ new Text( 'foo' ), new Element( 'imageBlock' ) ] );
 			const removed = element._removeChildren( 0 );
 
 			expect( element.childCount ).to.equal( 1 );
 			expect( element.maxOffset ).to.equal( 1 );
-			expect( element.getChild( 0 ).name ).to.equal( 'image' );
+			expect( element.getChild( 0 ).name ).to.equal( 'imageBlock' );
 
 			expect( removed.length ).to.equal( 1 );
 			expect( removed[ 0 ].data ).to.equal( 'foo' );
+		} );
+	} );
+
+	describe( '_removeChildrenArray', () => {
+		it( 'should remove children from the element', () => {
+			const _1 = new Text( '_1' );
+			const _2 = new Text( '_2' );
+			const _3 = new Text( '_3' );
+			const _4 = new Text( '_4' );
+			const _5 = new Text( '_5' );
+			const _6 = new Text( '_6' );
+
+			const element = new Element( 'elem', [], [ _1, _2, _3, _4, _5, _6 ] );
+
+			element._removeChildrenArray( [ _2, _3, _4 ] );
+
+			expect( element.childCount ).to.equal( 3 );
+			expect( element.maxOffset ).to.equal( 6 );
+
+			expect( element.getChild( 0 ) ).to.have.property( 'data' ).that.equals( '_1' );
+			expect( element.getChild( 1 ) ).to.have.property( 'data' ).that.equals( '_5' );
+			expect( element.getChild( 2 ) ).to.have.property( 'data' ).that.equals( '_6' );
 		} );
 	} );
 
@@ -204,7 +226,7 @@ describe( 'Element', () => {
 
 		it( 'should return a descendant of this node', () => {
 			const foo = new Text( 'foo' );
-			const image = new Element( 'image' );
+			const image = new Element( 'imageBlock' );
 			const element = new Element( 'elem', [], [
 				new Element( 'elem', [], [
 					foo,
@@ -298,6 +320,28 @@ describe( 'Element', () => {
 			expect( element.getChildStartOffset( p ) ).to.equal( 0 );
 			expect( element.getChildStartOffset( bar ) ).to.equal( 1 );
 			expect( element.getChildStartOffset( h ) ).to.equal( 4 );
+		} );
+	} );
+
+	describe( 'getChildAtOffset', () => {
+		it( 'should return child at given offset', () => {
+			const element = new Element( 'elem', [], [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+			const p = element.getChild( 0 );
+			const bar = element.getChild( 1 );
+			const h = element.getChild( 2 );
+
+			expect( element.getChildAtOffset( 0 ) ).to.equal( p );
+			expect( element.getChildAtOffset( 1 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 2 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 3 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 4 ) ).to.equal( h );
+		} );
+
+		it( 'should return null for incorrect offset', () => {
+			const element = new Element( 'elem', [], [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			expect( element.getChildAtOffset( -1 ) ).to.be.null;
+			expect( element.getChildAtOffset( 5 ) ).to.be.null;
 		} );
 	} );
 

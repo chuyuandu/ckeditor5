@@ -1,11 +1,13 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import View from '../../src/view';
-import ViewCollection from '../../src/viewcollection';
-import FormHeaderView from '../../src/formheader/formheaderview';
+import { IconCheck } from '@ckeditor/ckeditor5-icons';
+import View from '../../src/view.js';
+import ViewCollection from '../../src/viewcollection.js';
+import FormHeaderView from '../../src/formheader/formheaderview.js';
+import { IconView } from '../../src/index.js';
 
 describe( 'FormHeaderView', () => {
 	let view, locale;
@@ -39,8 +41,12 @@ describe( 'FormHeaderView', () => {
 		} );
 
 		it( 'should set the template', () => {
-			expect( view.element.classList.contains( 'ck' ) ).to.be.true;
-			expect( view.element.classList.contains( 'ck-form__header' ) ).to.be.true;
+			expect( view.template.attributes.class ).to.include( 'ck' );
+			expect( view.template.attributes.class ).to.include( 'ck-form__header' );
+		} );
+
+		it( 'should set view#tag', () => {
+			expect( view.children.first.template.tag ).to.equal( 'h2' );
 		} );
 
 		describe( 'options', () => {
@@ -48,7 +54,6 @@ describe( 'FormHeaderView', () => {
 				const view = new FormHeaderView( locale, {
 					class: 'foo'
 				} );
-
 				expect( view.class ).to.equal( 'foo' );
 
 				view.destroy();
@@ -63,7 +68,30 @@ describe( 'FormHeaderView', () => {
 
 				expect( view.element.firstChild.classList.contains( 'ck' ) ).to.be.true;
 				expect( view.element.firstChild.classList.contains( 'ck-form__header__label' ) ).to.be.true;
+				expect( view.element.firstChild.role ).to.equal( 'presentation' );
 				expect( view.element.firstChild.textContent ).to.equal( 'foo' );
+
+				view.destroy();
+			} );
+
+			it( 'should allow passing an icon', () => {
+				const view = new FormHeaderView( locale, {
+					label: 'foo',
+					icon: IconCheck
+				} );
+
+				view.render();
+
+				expect( view.element.lastChild.classList.contains( 'ck' ) ).to.be.true;
+				expect( view.element.lastChild.classList.contains( 'ck-form__header__label' ) ).to.be.true;
+				expect( view.element.lastChild.textContent ).to.equal( 'foo' );
+
+				expect( view.element.firstChild.classList.contains( 'ck' ) ).to.be.true;
+				expect( view.element.firstChild.classList.contains( 'ck-icon' ) ).to.be.true;
+
+				expect( view.iconView ).to.be.instanceOf( IconView );
+				expect( view.iconView.content ).to.equal( IconCheck );
+				expect( view.iconView.element ).to.equal( view.element.firstChild );
 
 				view.destroy();
 			} );

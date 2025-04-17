@@ -1,15 +1,10 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document */
-
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
-import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
-import Mention from '@ckeditor/ckeditor5-mention/src/mention';
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
+import { Underline, Strikethrough, Mention } from 'ckeditor5';
+import { CS_CONFIG, ClassicEditor, getViewportTopOffsetConfig } from '@snippets/index.js';
 
 ClassicEditor
 	.create( document.querySelector( '.chat__editor' ), {
@@ -17,9 +12,16 @@ ClassicEditor
 		extraPlugins: [ Mention, MentionLinks, Underline, Strikethrough ],
 		toolbar: {
 			items: [
-				'bold', 'italic', 'underline', 'strikethrough', '|', 'link', '|', 'undo', 'redo'
-			],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic', 'underline', 'strikethrough',
+				'|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
 		},
 		mention: {
 			feeds: [
@@ -68,11 +70,31 @@ ClassicEditor
 		}
 	} )
 	.then( editor => {
+		const editingView = editor.editing.view;
+		const rootElement = editingView.document.getRoot();
+
 		window.editor = editor;
 
 		// Clone the first message in the chat when "Send" is clicked, fill it with new data
 		// and append to the chat list.
 		document.querySelector( '.chat-send' ).addEventListener( 'click', () => {
+			const message = editor.getData();
+
+			if ( !message ) {
+				editingView.change( writer => {
+					writer.addClass( 'highlighted', rootElement );
+					editingView.focus();
+				} );
+
+				setTimeout( () => {
+					editingView.change( writer => {
+						writer.removeClass( 'highlighted', rootElement );
+					} );
+				}, 650 );
+
+				return;
+			}
+
 			const clone = document.querySelector( '.chat__posts li' ).cloneNode( true );
 
 			clone.classList.add( 'new-post' );
@@ -85,9 +107,12 @@ ClassicEditor
 			mailtoUser.href = 'mailto:info@cksource.com';
 
 			clone.querySelector( '.chat__posts__post__time' ).textContent = 'just now';
-			clone.querySelector( '.chat__posts__post__content' ).innerHTML = editor.getData();
+			clone.querySelector( '.chat__posts__post__content' ).innerHTML = message;
 
 			document.querySelector( '.chat__posts' ).appendChild( clone );
+
+			editor.setData( '' );
+			editingView.focus();
 		} );
 	} )
 	.catch( err => {

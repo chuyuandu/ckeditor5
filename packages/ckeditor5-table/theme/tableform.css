@@ -1,29 +1,16 @@
 /*
- * Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 .ck.ck-table-form {
 	& .ck-form__row {
 		&.ck-table-form__border-row {
 			flex-wrap: wrap;
+		}
 
-			& .ck-labeled-field-view {
-				display: flex;
-				flex-direction: column-reverse;
-
-				& .ck.ck-dropdown {
-					flex-grow: 0;
-				}
-			}
-
-			& .ck-table-form__border-style {
-				flex-grow: 0;
-			}
-
-			& .ck-table-form__border-width {
-				flex-grow: 0;
-			}
+		&.ck-table-form__background-row {
+			flex-wrap: wrap;
 		}
 
 		&.ck-table-form__dimensions-row {
@@ -43,6 +30,12 @@
 			& .ck-table-form__dimension-operator {
 				flex-grow: 0;
 			}
+		}
+
+		/* Ignore labels that work as fieldset legends */
+		/* Fallback for table dimension operator */
+		& > *:not(.ck-label, .ck-table-form__dimension-operator) {
+			flex-grow: 1;
 		}
 	}
 

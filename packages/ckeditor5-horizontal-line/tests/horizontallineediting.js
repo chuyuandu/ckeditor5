@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import HorizontalLineEditing from '../src/horizontallineediting';
-import HorizontalLineCommand from '../src/horizontallinecommand';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
-import { isWidget } from '@ckeditor/ckeditor5-widget/src/utils';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import HorizontalLineEditing from '../src/horizontallineediting.js';
+import HorizontalLineCommand from '../src/horizontallinecommand.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
+import { isWidget } from '@ckeditor/ckeditor5-widget/src/utils.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'HorizontalLineEditing', () => {
 	let editor, model, view, viewDocument;
@@ -33,6 +33,14 @@ describe( 'HorizontalLineEditing', () => {
 		expect( HorizontalLineEditing.pluginName ).to.equal( 'HorizontalLineEditing' );
 	} );
 
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( HorizontalLineEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( HorizontalLineEditing.isPremiumPlugin ).to.be.false;
+	} );
+
 	it( 'should be loaded', () => {
 		expect( editor.plugins.get( HorizontalLineEditing ) ).to.be.instanceOf( HorizontalLineEditing );
 	} );
@@ -46,7 +54,15 @@ describe( 'HorizontalLineEditing', () => {
 		expect( model.schema.checkChild( [ '$root', '$block' ], 'horizontalLine' ) ).to.be.false;
 	} );
 
-	it( 'should register imageInsert command', () => {
+	it( 'inherits attributes from $blockObject', () => {
+		model.schema.extend( '$blockObject', {
+			allowAttributes: 'foo'
+		} );
+
+		expect( model.schema.checkAttribute( 'horizontalLine', 'foo' ) ).to.be.true;
+	} );
+
+	it( 'should register horizontalLine command', () => {
 		expect( editor.commands.get( 'horizontalLine' ) ).to.be.instanceOf( HorizontalLineCommand );
 	} );
 

@@ -1,15 +1,14 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import TableEditing from '../../src/tableediting';
-import UndoEditing from '@ckeditor/ckeditor5-undo/src/undoediting';
-import { assertEqualMarkup } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import TableEditing from '../../src/tableediting.js';
+import UndoEditing from '@ckeditor/ckeditor5-undo/src/undoediting.js';
 
 describe( 'Table cell paragraph post-fixer', () => {
 	let editor, model, root;
@@ -26,8 +25,31 @@ describe( 'Table cell paragraph post-fixer', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		editor.destroy();
+	afterEach( async () => {
+		await editor.destroy();
+	} );
+
+	it( 'should omit elements that are not table rows (on table insert)', () => {
+		model.schema.register( 'foo', {
+			allowIn: 'table',
+			allowContentOf: '$block'
+		} );
+		editor.conversion.elementToElement( {
+			model: 'foo',
+			view: 'foo'
+		} );
+
+		setModelData( model,
+			'<table>' +
+				'<foo>' +
+					'bar' +
+				'</foo>' +
+			'</table>'
+		);
+
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
+			'<table><foo>bar</foo></table>'
+		);
 	} );
 
 	it( 'should add a paragraph to an empty table cell (on table insert)', () => {
@@ -39,7 +61,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			'</table>'
 		);
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell><paragraph></paragraph></tableCell>' +
@@ -63,7 +85,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.insertElement( 'tableCell', writer.createPositionAt( root.getNodeByPath( [ 0, 1 ] ), 0 ) );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell><paragraph></paragraph></tableCell>' +
@@ -89,7 +111,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.insertElement( 'tableCell', writer.createPositionAt( root.getNodeByPath( [ 0, 0 ] ), 'end' ) );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell><paragraph></paragraph></tableCell>' +
@@ -113,7 +135,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.remove( writer.createRangeIn( root.getNodeByPath( [ 0, 0, 0 ] ) ) );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell><paragraph></paragraph></tableCell>' +
@@ -122,7 +144,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 		);
 	} );
 
-	it( 'should wrap in paragraph $text nodes placed directly in tableCell (on table cell modification) ', () => {
+	it( 'should wrap in a paragraph $text nodes placed directly in tableCell (on table cell modification) ', () => {
 		setModelData( model,
 			'<table>' +
 				'<tableRow>' +
@@ -143,7 +165,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.insertText( 'baz', root.getNodeByPath( [ 0, 0, 0 ] ), 'end' );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell>' +
@@ -173,7 +195,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.insert( tableCell, writer.createPositionAt( root.getNodeByPath( [ 0, 0 ] ), 'end' ) );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell>' +
@@ -206,7 +228,7 @@ describe( 'Table cell paragraph post-fixer', () => {
 			writer.insert( tableRow, writer.createPositionAt( root.getNodeByPath( [ 0 ] ), 'end' ) );
 		} );
 
-		assertEqualMarkup( getModelData( model, { withoutSelection: true } ),
+		expect( getModelData( model, { withoutSelection: true } ) ).to.equalMarkup(
 			'<table>' +
 				'<tableRow>' +
 					'<tableCell>' +

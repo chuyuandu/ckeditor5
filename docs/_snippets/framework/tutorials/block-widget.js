@@ -1,22 +1,25 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document */
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
-import List from '@ckeditor/ckeditor5-list/src/list';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import {
+	ClassicEditor,
+	Bold,
+	Italic,
+	Essentials,
+	Heading,
+	List,
+	Paragraph,
+	Command,
+	Plugin,
+	ButtonView,
+	Widget,
+	toWidget,
+	toWidgetEditable
+} from 'ckeditor5';
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import { toWidget, toWidgetEditable } from '@ckeditor/ckeditor5-widget/src/utils';
-import Widget from '@ckeditor/ckeditor5-widget/src/widget';
-import Command from '@ckeditor/ckeditor5-core/src/command';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
+import { getViewportTopOffsetConfig } from '@snippets/index.js';
 
 class SimpleBox extends Plugin {
 	static get requires() {
@@ -230,8 +233,12 @@ ClassicEditor
 	.create( document.querySelector( '#snippet-block-widget' ), {
 		plugins: [ Essentials, Bold, Italic, Heading, List, Paragraph, SimpleBox ],
 		toolbar: {
-			items: [ 'heading', '|', 'bold', 'italic', 'numberedList', 'bulletedList', 'simpleBox' ],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+			items: [ 'heading', '|', 'bold', 'italic', 'numberedList', 'bulletedList', 'simpleBox' ]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
 		}
 	} )
 	.then( editor => {

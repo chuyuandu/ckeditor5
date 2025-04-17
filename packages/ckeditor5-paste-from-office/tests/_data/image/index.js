@@ -1,6 +1,6 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 // Generic.
@@ -13,6 +13,7 @@ import reflection from './reflection/input.word2016.html';
 import adjacentGroups from './adjacent-groups/input.word2016.html';
 import onlineOffline from './online-offline/input.word2016.html';
 import shapesOnlineOffline from './shapes-online-offline/input.word2016.html';
+import mixedImagesFromFilesystem from './mixed-images-from-filesystem/input.word2023.html';
 
 import offlineNormalized from './offline/normalized.word2016.html';
 import linkedNormalized from './linked/normalized.word2016.html';
@@ -23,6 +24,7 @@ import reflectionNormalized from './reflection/normalized.word2016.html';
 import adjacentGroupsNormalized from './adjacent-groups/normalized.word2016.html';
 import onlineOfflineNormalized from './online-offline/normalized.word2016.html';
 import shapesOnlineOfflineNormalized from './shapes-online-offline/normalized.word2016.html';
+import mixedImagesFromFilesystemNormalized from './mixed-images-from-filesystem/normalized.word2023.html';
 
 import offlineModel from './offline/model.word2016.html';
 import linkedModel from './linked/model.word2016.html';
@@ -33,6 +35,9 @@ import reflectionModel from './reflection/model.word2016.html';
 import adjacentGroupsModel from './adjacent-groups/model.word2016.html';
 import onlineOfflineModel from './online-offline/model.word2016.html';
 import shapesOnlineOfflineModel from './shapes-online-offline/model.word2016.html';
+import mixedImagesFromFilesystemModel from './mixed-images-from-filesystem/model.word2023.html';
+
+import mixedImagesFromFilesystemBlob from './mixed-images-from-filesystem/input.word2023.rtf';
 
 const genericFixtures = {
 	input: {
@@ -44,7 +49,8 @@ const genericFixtures = {
 		reflection,
 		adjacentGroups,
 		onlineOffline,
-		shapesOnlineOffline
+		shapesOnlineOffline,
+		mixedImagesFromFilesystem
 	},
 	normalized: {
 		offline: offlineNormalized,
@@ -55,7 +61,8 @@ const genericFixtures = {
 		reflection: reflectionNormalized,
 		adjacentGroups: adjacentGroupsNormalized,
 		onlineOffline: onlineOfflineNormalized,
-		shapesOnlineOffline: shapesOnlineOfflineNormalized
+		shapesOnlineOffline: shapesOnlineOfflineNormalized,
+		mixedImagesFromFilesystem: mixedImagesFromFilesystemNormalized
 	},
 	model: {
 		offline: offlineModel,
@@ -66,9 +73,12 @@ const genericFixtures = {
 		reflection: reflectionModel,
 		adjacentGroups: adjacentGroupsModel,
 		onlineOffline: onlineOfflineModel,
-		shapesOnlineOffline: shapesOnlineOfflineModel
+		shapesOnlineOffline: shapesOnlineOfflineModel,
+		mixedImagesFromFilesystem: mixedImagesFromFilesystemModel
 	},
-	inputBlob: {}
+	inputRtf: {
+		mixedImagesFromFilesystem: mixedImagesFromFilesystemBlob
+	}
 };
 
 export const fixtures = genericFixtures;
@@ -85,6 +95,17 @@ import reflectionRtfChrome from './reflection/input.chrome.word2016.rtf';
 import adjacentGroupsRtfChrome from './adjacent-groups/input.chrome.word2016.rtf';
 import onlineOfflineRtfChrome from './online-offline/input.chrome.word2016.rtf';
 import shapesOnlineOfflineRtfChrome from './shapes-online-offline/input.chrome.word2016.rtf';
+import noImgTagRtfChrome from './no-img-tag/input.chrome.word2016.rtf';
+import noImgTagRtfAltTextChrome from './no-img-tag-alt-text/input.chrome.word2016.rtf';
+
+import noImgTagChrome from './no-img-tag/input.chrome.word2016.html';
+import noImgTagAltTextChrome from './no-img-tag-alt-text/input.chrome.word2016.html';
+
+import noImgTagNormalizedChrome from './no-img-tag/normalized.chrome.word2016.html';
+import noImgTagNormalizedAltTextChrome from './no-img-tag-alt-text/normalized.chrome.word2016.html';
+
+import noImgTagModelChrome from './no-img-tag/model.chrome.word2016.html';
+import noImgTagModelAltTextChrome from './no-img-tag-alt-text/model.chrome.word2016.html';
 
 // Firefox
 import offlineRtfFirefox from './offline/input.firefox.word2016.rtf';
@@ -143,10 +164,23 @@ import shapesOnlineOfflineModelSafari from './shapes-online-offline/model.safari
 
 export const browserFixtures = {
 	chrome: {
-		input: Object.assign( {}, genericFixtures.input ),
-		normalized: Object.assign( {}, genericFixtures.normalized ),
-		model: Object.assign( {}, genericFixtures.model ),
+		input: {
+			...genericFixtures.input,
+			noImgTag: noImgTagChrome,
+			noImgTagAltText: noImgTagAltTextChrome
+		},
+		normalized: {
+			...genericFixtures.normalized,
+			noImgTag: noImgTagNormalizedChrome,
+			noImgTagAltText: noImgTagNormalizedAltTextChrome
+		},
+		model: {
+			...genericFixtures.model,
+			noImgTag: noImgTagModelChrome,
+			noImgTagAltText: noImgTagModelAltTextChrome
+		},
 		inputRtf: {
+			...genericFixtures.inputRtf,
 			offline: offlineRtfChrome,
 			linked: linkedRtfChrome,
 			rotated: rotatedRtfChrome,
@@ -155,9 +189,10 @@ export const browserFixtures = {
 			reflection: reflectionRtfChrome,
 			adjacentGroups: adjacentGroupsRtfChrome,
 			onlineOffline: onlineOfflineRtfChrome,
-			shapesOnlineOffline: shapesOnlineOfflineRtfChrome
+			shapesOnlineOffline: shapesOnlineOfflineRtfChrome,
+			noImgTag: noImgTagRtfChrome,
+			noImgTagAltText: noImgTagRtfAltTextChrome
 		}
-
 	},
 
 	firefox: {
@@ -165,6 +200,7 @@ export const browserFixtures = {
 		normalized: Object.assign( {}, genericFixtures.normalized ),
 		model: Object.assign( {}, genericFixtures.model ),
 		inputRtf: {
+			...genericFixtures.inputRtf,
 			offline: offlineRtfFirefox,
 			linked: linkedRtfFirefox,
 			rotated: rotatedRtfFirefox,
@@ -184,6 +220,7 @@ export const browserFixtures = {
 			adjacentGroups: adjacentGroupsModelEdge
 		} ),
 		inputRtf: {
+			...genericFixtures.inputRtf,
 			offline: offlineRtfEdge,
 			linked: linkedRtfEdge,
 			rotated: rotatedRtfEdge,

@@ -1,18 +1,18 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import { getData, setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { assertEqualMarkup } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import { getData, setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import TableEditing from '../../src/tableediting';
-import TableSelection from '../../src/tableselection';
-import { assertSelectedCells, modelTable } from '../_utils/utils';
+import TableEditing from '../../src/tableediting.js';
+import TableSelection from '../../src/tableselection.js';
+import { TableLayoutEditing } from '../../src/index.js';
+import { assertSelectedCells, modelTable } from '../_utils/utils.js';
 
-import SetHeaderRowCommand from '../../src/commands/setheaderrowcommand';
+import SetHeaderRowCommand from '../../src/commands/setheaderrowcommand.js';
 
 describe( 'SetHeaderRowCommand', () => {
 	let editor, model, command;
@@ -72,6 +72,39 @@ describe( 'SetHeaderRowCommand', () => {
 			);
 
 			expect( command.isEnabled ).to.be.true;
+		} );
+
+		describe( 'with `TableLayout` plugin', () => {
+			let editor, model, command;
+
+			beforeEach( () => {
+				return ModelTestEditor
+					.create( {
+						plugins: [ Paragraph, TableEditing, TableSelection, TableLayoutEditing ]
+					} )
+					.then( newEditor => {
+						editor = newEditor;
+						model = editor.model;
+						command = new SetHeaderRowCommand( editor );
+					} );
+			} );
+
+			afterEach( () => {
+				return editor.destroy();
+			} );
+
+			it( 'should be true if selection is in table', () => {
+				setData( model, '<table><tableRow><tableCell><paragraph>foo[]</paragraph></tableCell></tableRow></table>' );
+				expect( command.isEnabled ).to.be.true;
+			} );
+
+			it( 'should be false if selection is in table with `tableType="layout"`', () => {
+				setData( model,
+					'<table tableType="layout">' +
+						'<tableRow><tableCell><paragraph>foo[]</paragraph></tableCell></tableRow>' +
+					'</table>' );
+				expect( command.isEnabled ).to.be.false;
+			} );
 		} );
 	} );
 
@@ -172,7 +205,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00' ],
 				[ '[]10' ],
 				[ '20' ],
@@ -190,7 +223,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00' ],
 				[ '[]10' ],
 				[ '20' ],
@@ -217,7 +250,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00' ],
 				[ '[]10' ],
 				[ '20' ],
@@ -235,7 +268,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '[]00' ],
 				[ '10' ],
 				[ '20' ],
@@ -261,7 +294,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '00' ],
 					[ '10' ],
 					[ '20' ],
@@ -295,7 +328,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '00' ],
 					[ '10' ],
 					[ '20' ],
@@ -329,7 +362,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '00', '01', '02', '03' ],
 					[ '10', '11', '12', '13' ],
 					[ '20', '21', '22', '23' ],
@@ -374,7 +407,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '0', 'x' ],
 					[ '1', 'x' ],
 					[ '2', 'x' ],
@@ -421,7 +454,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '0', 'x' ],
 					[ '1', 'x' ],
 					[ '2', 'x' ],
@@ -457,7 +490,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute();
 
-				assertEqualMarkup( getData( model, { withoutSelection: true } ), modelTable( [
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup( modelTable( [
 					[ '00' ],
 					[ '10' ],
 					[ '20' ],
@@ -493,16 +526,9 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute( { forceValue: true } );
 
-				assertEqualMarkup( getData( model, {
-					withoutSelection: true
-				} ), modelTable( [
-					[ '00' ],
-					[ '10' ],
-					[ '20' ],
-					[ '30' ]
-				], {
-					headingRows: 3
-				} ) );
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup(
+					modelTable( [ [ '00' ], [ '10' ], [ '20' ], [ '30' ] ], { headingRows: 3 } )
+				);
 
 				assertSelectedCells( model, [
 					[ 0 ],
@@ -531,16 +557,9 @@ describe( 'SetHeaderRowCommand', () => {
 
 				command.execute( { forceValue: false } );
 
-				assertEqualMarkup( getData( model, {
-					withoutSelection: true
-				} ), modelTable( [
-					[ '00' ],
-					[ '10' ],
-					[ '20' ],
-					[ '30' ]
-				], {
-					headingRows: 1
-				} ) );
+				expect( getData( model, { withoutSelection: true } ) ).to.equalMarkup(
+					modelTable( [ [ '00' ], [ '10' ], [ '20' ], [ '30' ] ], { headingRows: 1 } )
+				);
 
 				assertSelectedCells( model, [
 					[ 0 ],
@@ -561,7 +580,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute( { forceValue: true } );
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00' ],
 				[ '[]10' ],
 				[ '20' ],
@@ -579,7 +598,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute( { forceValue: false } );
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00' ],
 				[ '[]10' ],
 				[ '20' ],
@@ -596,7 +615,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00', '01', '02' ],
 				[ { colspan: 2, contents: '10[]' }, '12' ],
 				[ { colspan: 2, contents: '' }, '22' ]
@@ -615,7 +634,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00', '01', '02' ],
 				[ { colspan: 2, rowspan: 2, contents: '10' }, '12' ],
 				[ '22[]' ],
@@ -633,7 +652,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00', '01' ],
 				[ '', '[]11' ]
 			], { headingRows: 1 } ) );
@@ -647,7 +666,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00', '01' ],
 				[ '[]10', '' ]
 			], { headingRows: 1 } ) );
@@ -662,7 +681,7 @@ describe( 'SetHeaderRowCommand', () => {
 
 			command.execute();
 
-			assertEqualMarkup( getData( model ), modelTable( [
+			expect( getData( model ) ).to.equalMarkup( modelTable( [
 				[ '00', '[]01', '02' ],
 				[ { colspan: 2, rowspan: 2, contents: '10' }, '12' ],
 				[ '22' ]

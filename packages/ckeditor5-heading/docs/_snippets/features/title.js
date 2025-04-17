@@ -1,20 +1,139 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document, setTimeout */
+import {
+	BalloonEditor as BalloonEditorBase,
+	Essentials,
+	Autoformat,
+	BlockToolbar,
+	Bold,
+	Italic,
+	BlockQuote,
+	CKBox,
+	CKBoxImageEdit,
+	EasyImage,
+	Heading,
+	Title,
+	Image,
+	ImageInsert,
+	ImageCaption,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	PictureEditing,
+	Indent,
+	Link,
+	List,
+	MediaEmbed,
+	Paragraph,
+	PasteFromOffice,
+	Table,
+	TableToolbar,
+	TextTransformation,
+	CloudServices
+} from 'ckeditor5';
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
-import BaloonBlockEditor from '@ckeditor/ckeditor5-build-balloon-block/src/ckeditor';
-import Title from '@ckeditor/ckeditor5-heading/src/title';
+class BalloonEditor extends BalloonEditorBase {}
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
+BalloonEditor.builtinPlugins = [
+	Essentials,
+	Autoformat,
+	BlockToolbar,
+	Bold,
+	Italic,
+	BlockQuote,
+	CKBox,
+	CKBoxImageEdit,
+	CloudServices,
+	EasyImage,
+	Heading,
+	Image,
+	ImageInsert,
+	ImageCaption,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	Indent,
+	Link,
+	List,
+	MediaEmbed,
+	Paragraph,
+	PasteFromOffice,
+	PictureEditing,
+	Table,
+	TableToolbar,
+	TextTransformation
+];
 
-BaloonBlockEditor.builtinPlugins.push( Title );
+BalloonEditor.defaultConfig = {
+	blockToolbar: [
+		'heading',
+		'|',
+		'bulletedList',
+		'numberedList',
+		'|',
+		'outdent',
+		'indent',
+		'|',
+		'insertImage',
+		'blockQuote',
+		'insertTable',
+		'mediaEmbed',
+		'|',
+		'undo',
+		'redo'
+	],
+	toolbar: {
+		items: [
+			'bold',
+			'italic',
+			'link'
+		]
+	},
+	image: {
+	// having this one here does not make the slightest sense
+		toolbar: [
+			'imageStyle:inline',
+			'imageStyle:block',
+			'imageStyle:wrapText',
+			'|',
+			'toggleImageCaption',
+			'imageTextAlternative',
+			'ckboxImageEdit'
+		]
+	},
+	table: {
+		contentToolbar: [
+			'tableColumn',
+			'tableRow',
+			'mergeTableCells'
+		]
+	},
+	// This value must be kept in sync with the language defined in webpack.config.js.
+	language: 'en'
+};
 
-BaloonBlockEditor
+BalloonEditor.builtinPlugins.push( Title );
+
+BalloonEditor
 	.create( document.querySelector( '#snippet-title' ), {
 		cloudServices: CS_CONFIG,
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ]
+		},
 		blockToolbar: [
 			'bulletedList',
 			'numberedList',
@@ -22,7 +141,7 @@ BaloonBlockEditor
 			'outdent',
 			'indent',
 			'|',
-			'imageUpload',
+			'insertImage',
 			'blockQuote',
 			'insertTable',
 			'mediaEmbed'
@@ -32,23 +151,29 @@ BaloonBlockEditor
 		window.editor = editor;
 
 		const titlePlugin = editor.plugins.get( 'Title' );
-		const titleConsole = new Console( document.querySelector( '.title-console__title' ) );
-		const bodyConsole = new Console( document.querySelector( '.title-console__body' ) );
-		const dataConsole = new Console( document.querySelector( '.title-console__data' ) );
+		const titleConsole = new Console( document.querySelector( '.title-console__title' ), 'plaintext' );
+		const bodyConsole = new Console( document.querySelector( '.title-console__body' ), 'html' );
+		const dataConsole = new Console( document.querySelector( '.title-console__data' ), 'html' );
 
 		editor.model.document.on( 'change:data', () => {
 			titleConsole.update( titlePlugin.getTitle() );
 			bodyConsole.update( titlePlugin.getBody() );
 			dataConsole.update( editor.getData() );
 		} );
+
+		// Load data.
+		titleConsole.update( '' );
+		bodyConsole.update( '<p>&nbsp;</p>' );
+		dataConsole.update( '<p>&nbsp;</p>' );
 	} )
 	.catch( err => {
 		console.error( err.stack );
 	} );
 
 class Console {
-	constructor( element ) {
+	constructor( element, language ) {
 		this.element = element;
+		this.language = language;
 		this.consoleUpdates = 0;
 		this.previousData = '';
 	}
@@ -59,13 +184,15 @@ class Console {
 		}
 
 		this.previousData = data;
-
 		const element = this.element;
 
 		this.consoleUpdates++;
 
 		element.classList.add( 'updated' );
-		element.textContent = `'${ data }'`;
+
+		const content = window.Prism.highlight( data, window.Prism.languages[ this.language ], this.language );
+
+		element.innerHTML = `'${ content }'`;
 
 		setTimeout( () => {
 			if ( --this.consoleUpdates == 0 ) {

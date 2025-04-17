@@ -1,17 +1,25 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document */
+import {
+	CS_CONFIG,
+	BalloonBlockEditor,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
-import BalloonEditor from '@ckeditor/ckeditor5-build-balloon-block/src/ckeditor';
-
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-
-BalloonEditor
+BalloonBlockEditor
 	.create( document.querySelector( '#snippet-balloon-block-editor' ), {
-		cloudServices: CS_CONFIG
+		removePlugins: [
+			'CKBox'
+		],
+		cloudServices: CS_CONFIG,
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		}
 	} )
 	.then( editor => {
 		window.editor = editor;

@@ -1,27 +1,33 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Model from '../../src/model/model';
-import Writer from '../../src/model/writer';
-import Batch from '../../src/model/batch';
-import InsertOperation from '../../src/model/operation/insertoperation';
+/* global console */
 
-import DocumentFragment from '../../src/model/documentfragment';
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import Position from '../../src/model/position';
-import Range from '../../src/model/range';
+import Model from '../../src/model/model.js';
+import Writer from '../../src/model/writer.js';
+import Batch from '../../src/model/batch.js';
+import InsertOperation from '../../src/model/operation/insertoperation.js';
 
-import count from '@ckeditor/ckeditor5-utils/src/count';
+import DocumentFragment from '../../src/model/documentfragment.js';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import Position from '../../src/model/position.js';
+import Range from '../../src/model/range.js';
 
-import { getNodesAndText } from '../../tests/model/_utils/utils';
-import DocumentSelection from '../../src/model/documentselection';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import count from '@ckeditor/ckeditor5-utils/src/count.js';
+
+import { getNodesAndText } from '../../tests/model/_utils/utils.js';
+import DocumentSelection from '../../src/model/documentselection.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
+
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'Writer', () => {
 	let model, doc, batch;
+
+	testUtils.createSinonSandbox();
 
 	beforeEach( () => {
 		model = new Model();
@@ -200,8 +206,8 @@ describe( 'Writer', () => {
 			expect( parent.childCount ).to.equal( 0 );
 		} );
 
-		it( 'should create proper operation for inserting element', () => {
-			const parent = createDocumentFragment();
+		it( 'should create proper operation for inserting element #1 (document operation)', () => {
+			const parent = doc.createRoot();
 			const element = createElement( 'child' );
 
 			const spy = sinon.spy( model, 'applyOperation' );
@@ -216,8 +222,24 @@ describe( 'Writer', () => {
 			expect( spy.lastCall.args[ 0 ].batch ).to.equal( batch );
 		} );
 
-		it( 'should create proper operation for inserting text', () => {
+		it( 'should create proper operation for inserting element #2 (non-document operation)', () => {
 			const parent = createDocumentFragment();
+			const element = createElement( 'child' );
+
+			const spy = sinon.spy( model, 'applyOperation' );
+
+			insert( element, parent );
+
+			sinon.assert.calledOnce( spy );
+
+			expect( spy.lastCall.args[ 0 ].type ).to.equal( 'insert' );
+			expect( spy.lastCall.args[ 0 ] ).to.instanceof( InsertOperation );
+			expect( spy.lastCall.args[ 0 ].shouldReceiveAttributes ).to.be.false;
+			expect( spy.lastCall.args[ 0 ].batch ).to.be.null;
+		} );
+
+		it( 'should create proper operation for inserting text', () => {
+			const parent = doc.createRoot();
 			const text = createText( 'child' );
 
 			const spy = sinon.spy( model, 'applyOperation' );
@@ -297,7 +319,7 @@ describe( 'Writer', () => {
 			// Verify operations.
 			sinon.assert.calledOnce( spy );
 			expect( spy.firstCall.args[ 0 ].type ).to.equal( 'move' );
-			expect( spy.firstCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.firstCall.args[ 0 ].batch ).to.be.null;
 		} );
 
 		it( 'should move element from one parent to the other within different document (docFragA -> docFragB)', () => {
@@ -318,9 +340,9 @@ describe( 'Writer', () => {
 			// Verify operations.
 			sinon.assert.calledTwice( spy );
 			expect( spy.firstCall.args[ 0 ].type ).to.equal( 'detach' );
-			expect( spy.firstCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.firstCall.args[ 0 ].batch ).to.be.null;
 			expect( spy.secondCall.args[ 0 ].type ).to.equal( 'insert' );
-			expect( spy.secondCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.secondCall.args[ 0 ].batch ).to.be.null;
 		} );
 
 		it( 'should throw when moving element from document to document fragment', () => {
@@ -509,7 +531,7 @@ describe( 'Writer', () => {
 		} );
 
 		it( 'should create proper operation', () => {
-			const parent = createDocumentFragment();
+			const parent = doc.createRoot();
 			const spy = sinon.spy( model, 'applyOperation' );
 
 			insertText( 'foo', parent );
@@ -631,7 +653,7 @@ describe( 'Writer', () => {
 		} );
 
 		it( 'should create proper operation', () => {
-			const parent = createDocumentFragment();
+			const parent = doc.createRoot();
 			const spy = sinon.spy( model, 'applyOperation' );
 
 			insertElement( 'foo', parent );
@@ -666,7 +688,7 @@ describe( 'Writer', () => {
 		} );
 
 		it( 'should create proper operation', () => {
-			const parent = createDocumentFragment();
+			const parent = doc.createRoot();
 			const text = createText( 'foo' );
 			const spy = sinon.spy( model, 'applyOperation' );
 
@@ -744,7 +766,7 @@ describe( 'Writer', () => {
 			// Verify operations.
 			sinon.assert.calledOnce( spy );
 			expect( spy.firstCall.args[ 0 ].type ).to.equal( 'move' );
-			expect( spy.firstCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.firstCall.args[ 0 ].batch ).to.be.null;
 		} );
 
 		it( 'should move element from one parent to the other within different document fragments (docFragA -> docFragB)', () => {
@@ -765,9 +787,9 @@ describe( 'Writer', () => {
 			// Verify operations.
 			sinon.assert.calledTwice( spy );
 			expect( spy.firstCall.args[ 0 ].type ).to.equal( 'detach' );
-			expect( spy.firstCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.firstCall.args[ 0 ].batch ).to.be.null;
 			expect( spy.secondCall.args[ 0 ].type ).to.equal( 'insert' );
-			expect( spy.secondCall.args[ 0 ].batch ).to.equal( batch );
+			expect( spy.secondCall.args[ 0 ].batch ).to.be.null;
 		} );
 
 		it( 'should throw when moving element from document to document fragment', () => {
@@ -817,7 +839,7 @@ describe( 'Writer', () => {
 		} );
 
 		it( 'should create proper operations', () => {
-			const parent = createDocumentFragment();
+			const parent = doc.createRoot();
 			const spy = sinon.spy( model, 'applyOperation' );
 
 			appendText( 'foo', parent );
@@ -871,7 +893,7 @@ describe( 'Writer', () => {
 		} );
 
 		it( 'should create proper operation', () => {
-			const parent = createDocumentFragment();
+			const parent = doc.createRoot();
 			const spy = sinon.spy( model, 'applyOperation' );
 
 			appendElement( 'foo', parent );
@@ -1522,8 +1544,8 @@ describe( 'Writer', () => {
 
 				const history = model.document.history;
 
-				const lastOperation = history._operations[ history._operations.length - 1 ];
-				const secondLastOperation = history._operations[ history._operations.length - 2 ];
+				const lastOperation = history.lastOperation;
+				const secondLastOperation = history.getOperation( history.version - 2 );
 
 				expect( secondLastOperation.type ).to.equal( 'marker' );
 				expect( secondLastOperation.oldRange.isEqual( markerRange ) );
@@ -1548,7 +1570,7 @@ describe( 'Writer', () => {
 
 			const history = model.document.history;
 
-			const lastOperation = history._operations[ history._operations.length - 1 ];
+			const lastOperation = history.lastOperation;
 
 			expect( lastOperation.type ).to.equal( 'merge' );
 			expect( model.document.version ).to.equal( documentVersion + 1 );
@@ -1613,8 +1635,8 @@ describe( 'Writer', () => {
 
 			const history = model.document.history;
 
-			const lastOperation = history._operations[ history._operations.length - 1 ];
-			const secondLastOperation = history._operations[ history._operations.length - 2 ];
+			const lastOperation = history.lastOperation;
+			const secondLastOperation = history.getOperation( history.version - 2 );
 
 			expect( secondLastOperation.type ).to.equal( 'marker' );
 			expect( secondLastOperation.oldRange.isEqual( markerRange ) );
@@ -1638,7 +1660,7 @@ describe( 'Writer', () => {
 
 			const history = model.document.history;
 
-			const lastOperation = history._operations[ history._operations.length - 1 ];
+			const lastOperation = history.lastOperation;
 
 			expect( lastOperation.type ).to.equal( 'move' );
 			expect( model.document.version ).to.equal( documentVersion + 1 );
@@ -1755,8 +1777,8 @@ describe( 'Writer', () => {
 
 				const history = model.document.history;
 
-				const lastOperation = history._operations[ history._operations.length - 1 ];
-				const secondLastOperation = history._operations[ history._operations.length - 2 ];
+				const lastOperation = history.lastOperation;
+				const secondLastOperation = history.getOperation( history.version - 2 );
 
 				expect( secondLastOperation.type ).to.equal( 'marker' );
 				expect( secondLastOperation.oldRange.isEqual( markerRange ) );
@@ -1781,7 +1803,7 @@ describe( 'Writer', () => {
 
 				const history = model.document.history;
 
-				const lastOperation = history._operations[ history._operations.length - 1 ];
+				const lastOperation = history.lastOperation;
 
 				expect( lastOperation.type ).to.equal( 'remove' );
 				expect( model.document.version ).to.equal( documentVersion + 1 );
@@ -1834,14 +1856,14 @@ describe( 'Writer', () => {
 				batch = new Batch();
 				remove( range );
 
-				expect( batch.operations.length ).to.equal( 2 );
+				expect( batch.operations.length ).to.equal( 0 );
 			} );
 
 			it( 'should use DetachOperation', () => {
-				batch = new Batch();
+				sinon.spy( model, 'applyOperation' );
 				remove( div );
 
-				expect( batch.operations[ 0 ].type ).to.equal( 'detach' );
+				expect( model.applyOperation.firstCall.args[ 0 ].type ).to.equal( 'detach' );
 			} );
 
 			it( 'should throw when trying to use detached writer', () => {
@@ -2496,19 +2518,32 @@ describe( 'Writer', () => {
 			}, 'writer-updatemarker-marker-not-exists', model );
 		} );
 
-		it( 'should only refresh the marker when there is no provided options to update', () => {
+		it( 'should only refresh (but warn()) the marker when there is no provided options to update', () => {
 			const marker = addMarker( 'name', { range, usingOperation: true } );
 			const spy = sinon.spy( model.markers, '_refresh' );
+			const consoleWarnStub = testUtils.sinon.stub( console, 'warn' );
 
 			updateMarker( marker );
 
 			sinon.assert.calledOnce( spy );
 			sinon.assert.calledWithExactly( spy, marker );
+			sinon.assert.calledOnce( consoleWarnStub );
+			sinon.assert.calledWithExactly( consoleWarnStub.firstCall,
+				sinon.match( /^writer-updatemarker-reconvert-using-editingcontroller/ ),
+				{ markerName: 'name' },
+				sinon.match.string // Link to the documentation
+			);
 
 			updateMarker( 'name' );
 
 			sinon.assert.calledTwice( spy );
 			sinon.assert.calledWithExactly( spy.secondCall, marker );
+			sinon.assert.calledTwice( consoleWarnStub );
+			sinon.assert.calledWithExactly( consoleWarnStub.secondCall,
+				sinon.match( /^writer-updatemarker-reconvert-using-editingcontroller/ ),
+				{ markerName: 'name' },
+				sinon.match.string // Link to the documentation
+			);
 		} );
 
 		it( 'should throw when trying to use detached writer', () => {
@@ -2573,6 +2608,151 @@ describe( 'Writer', () => {
 			sinon.assert.calledOnce( spy );
 			expect( spy.firstCall.args[ 1 ][ 0 ].type ).to.equal( 'marker' );
 			expect( model.markers.get( 'name' ) ).to.be.null;
+		} );
+	} );
+
+	describe( 'addRoot()', () => {
+		it( 'should add an empty, attached root to the model and return it', () => {
+			model.change( writer => {
+				const root = writer.addRoot( 'new' );
+
+				expect( model.document.getRoot( 'new' ) ).to.equal( root );
+				expect( root.isAttached() ).to.be.true;
+			} );
+		} );
+
+		it( 'should add a root with specified element name', () => {
+			model.change( writer => {
+				const root = writer.addRoot( 'new', 'div' );
+
+				expect( root.name ).to.equal( 'div' );
+			} );
+		} );
+
+		it( 'should re-attach the root if it was previously detached', () => {
+			model.change( writer => {
+				writer.addRoot( 'new' );
+				writer.detachRoot( 'new' );
+			} );
+
+			model.change( writer => {
+				const root = writer.addRoot( 'new' );
+
+				expect( root.isAttached() ).to.be.true;
+			} );
+		} );
+
+		it( 'should throw when root with such name already exists and is attached', () => {
+			model.change( writer => {
+				writer.addRoot( 'new' );
+
+				expectToThrowCKEditorError( () => {
+					writer.addRoot( 'new' );
+				}, /^writer-addroot-root-exists/, model );
+			} );
+		} );
+
+		it( 'should use RootOperation to modify the model', () => {
+			model.change( writer => {
+				const version = model.document.version;
+
+				writer.addRoot( 'new', 'div' );
+
+				const op = model.document.history.getOperation( version );
+
+				expect( op.type ).to.equal( 'addRoot' );
+				expect( op.rootName ).to.equal( 'new' );
+				expect( op.elementName ).to.equal( 'div' );
+				expect( op.baseVersion ).to.equal( version );
+				expect( op.isAdd ).to.equal( true );
+			} );
+		} );
+	} );
+
+	describe( 'detachRoot()', () => {
+		it( 'should detach the root from the model and remove all children, attributes and markers from it', () => {
+			let root, p;
+
+			model.change( writer => {
+				root = writer.addRoot( 'new' );
+				p = writer.createElement( 'paragraph' );
+				writer.insert( p, root, 0 );
+				writer.setAttribute( 'foo', true, root );
+				writer.setAttribute( 'bar', false, root );
+				writer.addMarker( 'newMarker', { usingOperation: true, affectsData: true, range: writer.createRangeIn( root ) } );
+			} );
+
+			model.change( writer => {
+				writer.detachRoot( root );
+			} );
+
+			expect( root.isAttached() ).to.be.false;
+			expect( root.isEmpty );
+			expect( Array.from( root.getAttributes() ).length ).to.equal( 0 );
+			expect( p.parent.rootName ).to.equal( '$graveyard' );
+			expect( model.markers.get( 'newMarker' ) ).to.be.null;
+		} );
+
+		it( 'should not remove markers when root in range is different than the detached root', () => {
+			let root;
+
+			model.change( writer => {
+				root = writer.addRoot( 'new' );
+				const otherRoot = writer.addRoot( 'otherRoot' );
+				writer.addMarker( 'newMarker', { usingOperation: true, affectsData: true, range: writer.createRangeIn( otherRoot ) } );
+			} );
+
+			model.change( writer => {
+				writer.detachRoot( root );
+			} );
+
+			expect( model.markers.get( 'newMarker' ) ).not.to.be.null;
+		} );
+
+		it( 'should accept root name as a parameter', () => {
+			model.change( writer => {
+				writer.addRoot( 'new' );
+				writer.detachRoot( 'new' );
+			} );
+
+			expect( model.document.getRoot( 'new' ).isAttached() ).to.be.false;
+		} );
+
+		it( 'should throw when trying to detach a non-existing root', () => {
+			model.change( writer => {
+				expectToThrowCKEditorError( () => {
+					writer.detachRoot( 'foo' );
+				}, /^writer-detachroot-no-root/, model );
+			} );
+		} );
+
+		it( 'should throw when trying to detach an already detached root', () => {
+			model.change( writer => {
+				writer.addRoot( 'foo' );
+				writer.detachRoot( 'foo' );
+
+				expectToThrowCKEditorError( () => {
+					writer.detachRoot( 'foo' );
+				}, /^writer-detachroot-no-root/, model );
+			} );
+		} );
+
+		it( 'should use RootOperation to modify the model', () => {
+			model.change( writer => {
+				writer.addRoot( 'new', 'div' );
+
+				const version = model.document.version;
+
+				writer.detachRoot( 'new' );
+
+				const op = model.document.history.getOperation( version );
+
+				expect( op.type ).to.equal( 'detachRoot' );
+				expect( op.rootName ).to.equal( 'new' );
+				expect( op.elementName ).to.equal( 'div' );
+				expect( op.baseVersion ).to.equal( version );
+				expect( op.isAdd ).to.equal( false );
+			} );
 		} );
 	} );
 

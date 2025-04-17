@@ -1,17 +1,164 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window */
+import {
+	ClassicEditor as ClassicEditorBase,
+	BalloonEditor as BalloonEditorBase,
+	Essentials,
+	CKFinderUploadAdapter,
+	Autoformat,
+	Bold,
+	Italic,
+	BlockQuote,
+	CKBox,
+	CKBoxImageEdit,
+	Heading,
+	Image,
+	ImageCaption,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	ImageInsert,
+	PictureEditing,
+	Indent,
+	Link,
+	List,
+	MediaEmbed,
+	Paragraph,
+	PasteFromOffice,
+	Table,
+	TableToolbar,
+	TextTransformation,
+	CloudServices,
+	WordCount
+} from 'ckeditor5';
 
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import BalloonEditor from '@ckeditor/ckeditor5-build-balloon/src/ckeditor';
+const builtinPlugins = [
+	Essentials,
+	CKFinderUploadAdapter,
+	Autoformat,
+	Bold,
+	Italic,
+	BlockQuote,
+	CKBox,
+	CKBoxImageEdit,
+	CloudServices,
+	Heading,
+	Image,
+	ImageCaption,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	ImageInsert,
+	Indent,
+	Link,
+	List,
+	MediaEmbed,
+	Paragraph,
+	PasteFromOffice,
+	PictureEditing,
+	Table,
+	TableToolbar,
+	TextTransformation
+];
 
-import WordCount from '@ckeditor/ckeditor5-word-count/src/wordcount';
+export class BalloonEditor extends BalloonEditorBase {
+	static builtinPlugins = [
+		...builtinPlugins,
+		WordCount
+	];
 
-ClassicEditor.builtinPlugins.push( WordCount );
-BalloonEditor.builtinPlugins.push( WordCount );
+	static defaultConfig = {
+		toolbar: {
+			items: [
+				'heading',
+				'|',
+				'bold',
+				'italic',
+				'link',
+				'bulletedList',
+				'numberedList',
+				'|',
+				'outdent',
+				'indent',
+				'|',
+				'insertImage',
+				'ckbox',
+				'blockQuote',
+				'insertTable',
+				'mediaEmbed',
+				'undo',
+				'redo'
+			]
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline',
+				'imageStyle:block',
+				'imageStyle:wrapText',
+				'|',
+				'toggleImageCaption',
+				'imageTextAlternative'
+			]
+		},
+		table: {
+			contentToolbar: [
+				'tableColumn',
+				'tableRow',
+				'mergeTableCells'
+			]
+		},
+		language: 'en'
+	};
+}
 
-window.ClassicEditor = ClassicEditor;
-window.BalloonEditor = BalloonEditor;
+export class ClassicEditor extends ClassicEditorBase {
+	static builtinPlugins = [
+		...builtinPlugins,
+		WordCount
+	];
+
+	static defaultConfig = {
+		toolbar: {
+			items: [
+				'heading',
+				'|',
+				'bold',
+				'italic',
+				'link',
+				'bulletedList',
+				'numberedList',
+				'|',
+				'outdent',
+				'indent',
+				'|',
+				'insertImage',
+				'blockQuote',
+				'insertTable',
+				'mediaEmbed',
+				'undo',
+				'redo'
+			]
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline',
+				'imageStyle:block',
+				'imageStyle:wrapText',
+				'|',
+				'toggleImageCaption',
+				'imageTextAlternative'
+			]
+		},
+		table: {
+			contentToolbar: [
+				'tableColumn',
+				'tableRow',
+				'mergeTableCells'
+			]
+		},
+		language: 'en'
+	};
+}

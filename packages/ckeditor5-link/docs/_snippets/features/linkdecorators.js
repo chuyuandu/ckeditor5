@@ -1,15 +1,41 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals console, window, document, Worker, setTimeout, ClassicEditor, CS_CONFIG */
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	ClassicEditor,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
 ClassicEditor
 	.create( document.querySelector( '#snippet-link-decorators' ), {
 		cloudServices: CS_CONFIG,
 		toolbar: {
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+			items: [
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|',
+				'toggleImageCaption', 'imageTextAlternative', 'ckboxImageEdit'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		},
 		link: {
 			addTargetToExternalLinks: true,
@@ -31,27 +57,12 @@ ClassicEditor
 		window.editors.decorators = editor;
 
 		const outputElement = document.querySelector( '#output-link-decorators' );
-		const worker = new Worker( window.umberto.relativeAppPath + '/highlight.worker.js' );
 
-		worker.addEventListener( 'message', evt => {
-			const data = JSON.parse( evt.data );
-
-			outputElement.innerHTML = data.payload;
-		} );
+		outputElement.innerHTML = window.Prism.highlight( editor.getData(), window.Prism.languages.html, 'html' );
 
 		editor.model.document.on( 'change', () => {
-			worker.postMessage( JSON.stringify( {
-				payload: editor.getData(),
-				language: 'html'
-			} ) );
+			outputElement.innerHTML = window.Prism.highlight( editor.getData(), window.Prism.languages.html, 'html' );
 		} );
-
-		setTimeout( () => {
-			worker.postMessage( JSON.stringify( {
-				payload: editor.getData(),
-				language: 'html'
-			} ) );
-		}, 500 );
 	} )
 	.catch( err => {
 		console.error( err.stack );

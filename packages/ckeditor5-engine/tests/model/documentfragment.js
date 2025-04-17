@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import TextProxy from '../../src/model/textproxy';
-import DocumentFragment from '../../src/model/documentfragment';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import TextProxy from '../../src/model/textproxy.js';
+import DocumentFragment from '../../src/model/documentfragment.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'DocumentFragment', () => {
 	describe( 'constructor()', () => {
@@ -35,10 +35,20 @@ describe( 'DocumentFragment', () => {
 			expect( frag ).to.have.property( 'markers' ).to.instanceof( Map );
 		} );
 
-		it( 'should have root property, equal to itself', () => {
+		it( 'should have artificial properties', () => {
 			const frag = new DocumentFragment();
 
 			expect( frag ).to.have.property( 'root' ).that.equals( frag );
+			expect( frag ).to.have.property( 'parent' ).that.is.null;
+			expect( frag ).to.have.property( 'nextSibling' ).that.is.null;
+			expect( frag ).to.have.property( 'previousSibling' ).that.is.null;
+			expect( frag ).to.have.property( 'document' ).that.is.null;
+		} );
+
+		it( 'should have `getAncestor` method that returns empty array', () => {
+			const frag = new DocumentFragment();
+
+			expect( frag.getAncestors() ).to.be.an( 'array' ).that.is.empty;
 		} );
 	} );
 
@@ -94,6 +104,14 @@ describe( 'DocumentFragment', () => {
 			const frag = new DocumentFragment( new Text( 'a' ) );
 
 			expect( frag.isEmpty ).to.be.false;
+		} );
+	} );
+
+	describe( 'isAttached()', () => {
+		it( 'returns false', () => {
+			const frag = new DocumentFragment();
+
+			expect( frag.isAttached() ).to.be.false;
 		} );
 	} );
 
@@ -184,7 +202,7 @@ describe( 'DocumentFragment', () => {
 
 	describe( '_removeChildren', () => {
 		it( 'should remove children from the element and return them as an array', () => {
-			const frag = new DocumentFragment( [ new Text( 'foobar' ), new Element( 'image' ) ] );
+			const frag = new DocumentFragment( [ new Text( 'foobar' ), new Element( 'imageBlock' ) ] );
 			const removed = frag._removeChildren( 1, 1 );
 
 			expect( frag.childCount ).to.equal( 1 );
@@ -193,19 +211,40 @@ describe( 'DocumentFragment', () => {
 			expect( frag.getChild( 0 ) ).to.have.property( 'data' ).that.equals( 'foobar' );
 
 			expect( removed.length ).to.equal( 1 );
-			expect( removed[ 0 ].name ).to.equal( 'image' );
+			expect( removed[ 0 ].name ).to.equal( 'imageBlock' );
 		} );
 
 		it( 'should remove one child when second parameter is not specified', () => {
-			const frag = new DocumentFragment( [ new Text( 'foo' ), new Element( 'image' ) ] );
+			const frag = new DocumentFragment( [ new Text( 'foo' ), new Element( 'imageBlock' ) ] );
 			const removed = frag._removeChildren( 0 );
 
 			expect( frag.childCount ).to.equal( 1 );
 			expect( frag.maxOffset ).to.equal( 1 );
-			expect( frag.getChild( 0 ).name ).to.equal( 'image' );
+			expect( frag.getChild( 0 ).name ).to.equal( 'imageBlock' );
 
 			expect( removed.length ).to.equal( 1 );
 			expect( removed[ 0 ].data ).to.equal( 'foo' );
+		} );
+	} );
+
+	describe( '_removeChildrenArray', () => {
+		it( 'should remove children from the element', () => {
+			const _1 = new Text( '_1' );
+			const _2 = new Text( '_2' );
+			const _3 = new Text( '_3' );
+			const _4 = new Text( '_4' );
+			const _5 = new Text( '_5' );
+			const _6 = new Text( '_6' );
+
+			const frag = new DocumentFragment( [ _1, _2, _3, _4, _5, _6 ] );
+
+			frag._removeChildrenArray( [ _2, _3, _4 ] );
+
+			expect( frag.childCount ).to.equal( 3 );
+
+			expect( frag.getChild( 0 ) ).to.have.property( 'data' ).that.equals( '_1' );
+			expect( frag.getChild( 1 ) ).to.have.property( 'data' ).that.equals( '_5' );
+			expect( frag.getChild( 2 ) ).to.have.property( 'data' ).that.equals( '_6' );
 		} );
 	} );
 
@@ -241,6 +280,29 @@ describe( 'DocumentFragment', () => {
 			const p = new Element( 'p' );
 
 			expect( frag.getChildStartOffset( p ) ).to.equal( null );
+		} );
+	} );
+
+	describe( 'getChildAtOffset', () => {
+		it( 'should return child at given offset', () => {
+			const frag = new DocumentFragment( [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			const p = frag.getChild( 0 );
+			const textBAR = frag.getChild( 1 );
+			const h = frag.getChild( 2 );
+
+			expect( frag.getChildAtOffset( 0 ) ).to.equal( p );
+			expect( frag.getChildAtOffset( 1 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 2 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 3 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 4 ) ).to.equal( h );
+		} );
+
+		it( 'should return null for incorrect offset', () => {
+			const frag = new DocumentFragment( [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			expect( frag.getChildAtOffset( -1 ) ).to.be.null;
+			expect( frag.getChildAtOffset( 5 ) ).to.be.null;
 		} );
 	} );
 
@@ -327,7 +389,7 @@ describe( 'DocumentFragment', () => {
 
 		it( 'should return a descendant of this node', () => {
 			const foo = new Text( 'foo' );
-			const image = new Element( 'image' );
+			const image = new Element( 'imageBlock' );
 			const element = new Element( 'elem', [], [
 				new Element( 'elem', [], [
 					foo,

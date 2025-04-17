@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals document */
 
-import ClickObserver from '../../../src/view/observer/clickobserver';
-import View from '../../../src/view/view';
-import { StylesProcessor } from '../../../src/view/stylesmap';
+import ClickObserver from '../../../src/view/observer/clickobserver.js';
+import View from '../../../src/view/view.js';
+import { StylesProcessor } from '../../../src/view/stylesmap.js';
 
 describe( 'ClickObserver', () => {
 	let view, viewDocument, observer;

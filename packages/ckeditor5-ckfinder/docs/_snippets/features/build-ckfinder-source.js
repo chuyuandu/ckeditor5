@@ -1,13 +1,30 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window */
+import {
+	CKFinder,
+	CKFinderUploadAdapter,
+	PictureEditing,
+	AutoImage,
+	ImageResize,
+	ImageInsert,
+	LinkImage,
+	Alignment
+} from 'ckeditor5';
+import { ClassicEditor } from '@snippets/index.js';
 
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
-
-ClassicEditor.builtinPlugins.push( CKFinder );
-
-window.ClassicEditor = ClassicEditor;
+export class CKFinderEditor extends ClassicEditor {
+	static builtinPlugins = [
+		...ClassicEditor.builtinPlugins,
+		CKFinder,
+		CKFinderUploadAdapter,
+		PictureEditing,
+		AutoImage,
+		ImageResize,
+		ImageInsert,
+		LinkImage,
+		Alignment
+	];
+}

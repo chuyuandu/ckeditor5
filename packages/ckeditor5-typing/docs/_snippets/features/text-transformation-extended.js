@@ -1,17 +1,42 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { TextTransformationEditor } from './build-text-transformation-source.js';
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-
-ClassicEditor
+TextTransformationEditor
 	.create( document.querySelector( '#snippet-text-transformation-extended' ), {
 		cloudServices: CS_CONFIG,
+		placeholder: 'Type here...',
 		toolbar: {
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+			items: [
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
+		image: {
+			toolbar: [
+				'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|',
+				'toggleImageCaption', 'imageTextAlternative', 'ckboxImageEdit'
+			]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		},
 		typing: {
 			transformations: {
@@ -42,9 +67,9 @@ ClassicEditor
 					},
 
 					// Finally, you can define `to` as a callback.
-					// This (naive) rule will auto-capitalize the first word after a period.
+					// This (naive) rule will auto-capitalize the first word after a period, question mark, or an exclamation mark.
 					{
-						from: /(\. )([a-z])$/,
+						from: /([.?!] )([a-z])$/,
 						to: matches => [ null, matches[ 1 ].toUpperCase() ]
 					}
 				]

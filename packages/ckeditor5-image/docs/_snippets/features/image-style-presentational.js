@@ -1,55 +1,74 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
+import {
+	CS_CONFIG,
+	TOKEN_URL,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
+import { ImageEditor } from './build-image-source.js';
 
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config.js';
-
-ClassicEditor
-	.create( document.querySelector( '#snippet-image-style-custom' ), {
-		removePlugins: [ 'LinkImage' ],
+ImageEditor
+	.create( document.querySelector( '#snippet-presentational-image-style-default' ), {
+		removePlugins: [ 'LinkImage', 'AutoImage', 'imageCaption' ],
+		toolbar: {
+			items: [
+				'undo', 'redo',
+				'|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'insertImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
 		image: {
-			styles: [
-				'alignLeft',
-				'alignCenter',
-				'alignRight'
-			],
+			resizeUnit: '%',
 			resizeOptions: [
 				{
-					name: 'imageResize:original',
+					name: 'resizeImage:original',
 					label: 'Original',
 					value: null
 				},
 				{
-					name: 'imageResize:50',
+					name: 'resizeImage:custom',
+					label: 'Custom',
+					value: 'custom'
+				},
+				{
+					name: 'resizeImage:40',
 					label: '50%',
 					value: '50'
 				},
 				{
-					name: 'imageResize:75',
+					name: 'resizeImage:60',
 					label: '75%',
 					value: '75'
 				}
 			],
 			toolbar: [
-				'imageStyle:alignLeft',
-				'imageStyle:alignCenter',
-				'imageStyle:alignRight',
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'resizeImage',
 				'|',
-				'imageResize',
-				'|',
-				'imageTextAlternative'
+				'ckboxImageEdit'
 			]
 		},
-		toolbar: {
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
+		},
+		ckbox: {
+			tokenUrl: TOKEN_URL,
+			allowExternalImagesEditing: [ /^data:/, 'origin', /ckbox/ ],
+			forceDemoLabel: true
 		},
 		cloudServices: CS_CONFIG
 	} )
 	.then( editor => {
-		window.editorStyleCustom = editor;
+		window.editorStylePresentational = editor;
 	} )
 	.catch( err => {
 		console.error( err );

@@ -1,17 +1,46 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window */
+import { Plugin, IconLink, Link, LinkUI } from 'ckeditor5';
 
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
-import AutoLink from '@ckeditor/ckeditor5-link/src/autolink';
+export class SocialLinksPlugin extends Plugin {
+	static get requires() {
+		return [ Link ];
+	}
 
-window.CKEditorPlugins = {
-	AutoLink
-};
+	async init() {
+		const linkUI = this.editor.plugins.get( LinkUI );
 
-window.ClassicEditor = ClassicEditor;
-window.CS_CONFIG = CS_CONFIG;
+		linkUI.registerLinksListProvider( {
+			label: 'Social links',
+			getListItems: () => [
+				{
+					id: 'facebook',
+					href: 'https://facebook.com',
+					label: 'Facebook',
+					icon: IconLink
+				},
+				{
+					id: 'twitter',
+					href: 'https://twitter.com',
+					label: 'Twitter',
+					icon: IconLink
+				},
+				{
+					id: 'linkedin',
+					href: 'https://linkedin.com',
+					label: 'LinkedIn',
+					icon: IconLink
+				},
+				{
+					id: 'instagram',
+					href: 'https://instagram.com',
+					label: 'Instagram',
+					icon: IconLink
+				}
+			]
+		} );
+	}
+}

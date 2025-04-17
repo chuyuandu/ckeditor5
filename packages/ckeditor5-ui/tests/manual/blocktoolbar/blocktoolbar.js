@@ -1,26 +1,29 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals window, document, console:false, setTimeout */
 
-import BalloonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import List from '@ckeditor/ckeditor5-list/src/list';
-import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
-import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui';
-import ParagraphButtonUI from '@ckeditor/ckeditor5-paragraph/src/paragraphbuttonui';
-import BlockToolbar from '../../../src/toolbar/block/blocktoolbar';
+import BalloonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor.js';
+import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials.js';
+import List from '@ckeditor/ckeditor5-list/src/list.js';
+import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock.js';
+import Image from '@ckeditor/ckeditor5-image/src/image.js';
+import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption.js';
+import { Paragraph, ParagraphButtonUI } from '@ckeditor/ckeditor5-paragraph';
+import Heading from '@ckeditor/ckeditor5-heading/src/heading.js';
+import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui.js';
+import BlockToolbar from '../../../src/toolbar/block/blocktoolbar.js';
 
 BalloonEditor
 	.create( document.querySelector( '#editor' ), {
-		plugins: [ Essentials, List, Paragraph, Heading, Image, ImageCaption, HeadingButtonsUI, ParagraphButtonUI, BlockToolbar ],
+		plugins: [
+			Essentials, List, Paragraph, Heading, Image, ImageCaption,
+			HeadingButtonsUI, ParagraphButtonUI, BlockToolbar, CodeBlock
+		],
 		blockToolbar: [
-			'paragraph', 'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph',
+			'paragraph', 'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph', 'codeBlock',
 			'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph', 'heading1', 'heading2', 'heading3',
 			'bulletedList', 'numberedList'
 		]
@@ -59,7 +62,7 @@ function createExternalChangesSimulator( editor ) {
 	}
 
 	function insertNewLine( path ) {
-		model.enqueueChange( 'transparent', writer => {
+		model.enqueueChange( { isUndoable: false }, writer => {
 			writer.insertElement( 'paragraph', writer.createPositionFromPath( model.document.getRoot(), path ) );
 		} );
 
@@ -73,7 +76,7 @@ function createExternalChangesSimulator( editor ) {
 
 			function typing() {
 				wait( 40 ).then( () => {
-					model.enqueueChange( 'transparent', writer => {
+					model.enqueueChange( { isUndoable: false }, writer => {
 						writer.insertText( text[ index ], position );
 						position = position.getShiftedBy( 1 );
 
@@ -94,7 +97,7 @@ function createExternalChangesSimulator( editor ) {
 	}
 
 	function removeElement( path ) {
-		model.enqueueChange( 'transparent', writer => {
+		model.enqueueChange( { isUndoable: false }, writer => {
 			const start = writer.createPositionFromPath( model.document.getRoot(), path );
 
 			writer.remove( writer.createRange( start, start.getShiftedBy( 1 ) ) );

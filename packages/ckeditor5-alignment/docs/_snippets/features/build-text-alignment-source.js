@@ -1,14 +1,30 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals window */
+import {
+	CKBox,
+	CKBoxImageEdit,
+	PictureEditing,
+	ImageInsert,
+	ImageResize,
+	AutoImage,
+	LinkImage,
+	Alignment
+} from 'ckeditor5';
+import { ClassicEditor } from '@snippets/index.js';
 
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
-
-ClassicEditor.builtinPlugins.push( Alignment );
-
-window.ClassicEditor = ClassicEditor;
+export class TextAlignmentEditor extends ClassicEditor {
+	static builtinPlugins = [
+		...ClassicEditor.builtinPlugins,
+		CKBox,
+		CKBoxImageEdit,
+		PictureEditing,
+		ImageInsert,
+		ImageResize,
+		AutoImage,
+		LinkImage,
+		Alignment
+	];
+}

@@ -1,14 +1,14 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import FontFamilyEditing from './../../src/fontfamily/fontfamilyediting';
+import FontFamilyEditing from './../../src/fontfamily/fontfamilyediting.js';
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
 describe( 'FontFamilyEditing', () => {
 	let editor, doc;
@@ -25,12 +25,20 @@ describe( 'FontFamilyEditing', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		editor.destroy();
+	afterEach( async () => {
+		await editor.destroy();
 	} );
 
 	it( 'should have pluginName', () => {
 		expect( FontFamilyEditing.pluginName ).to.equal( 'FontFamilyEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( FontFamilyEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( FontFamilyEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should set proper schema rules', () => {
@@ -129,6 +137,32 @@ describe( 'FontFamilyEditing', () => {
 					expect( getModelData( doc ) ).to.equal( '<paragraph>[]f<$text fontFamily="Arial,sans-serif">o</$text>o</paragraph>' );
 
 					expect( editor.getData() ).to.equal( data );
+				} );
+
+				it( 'should convert from a nested element', () => {
+					const data = '<p>f<span><span><span><span style="font-family: Arial, sans-serif">o</span></span></span></span>o</p>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal( '<paragraph>[]f<$text fontFamily="Arial, sans-serif">o</$text>o</paragraph>' );
+
+					expect( editor.getData() ).to.equal( '<p>f<span style="font-family:Arial, sans-serif;">o</span>o</p>' );
+				} );
+
+				it( 'should support <font face=".."> styling', () => {
+					const data = '<p><font face="Arial,Verdana">foo</font><span style="font-family: Arial, sans-serif">bar</span></p>';
+
+					editor.setData( data );
+
+					expect( getModelData( doc ) ).to.equal(
+						'<paragraph>' +
+							'<$text fontFamily="Arial,Verdana">[]foo</$text><$text fontFamily="Arial, sans-serif">bar</$text>' +
+						'</paragraph>'
+					);
+
+					expect( editor.getData() ).to.equal(
+						'<p><span style="font-family:Arial,Verdana;">foo</span><span style="font-family:Arial, sans-serif;">bar</span></p>'
+					);
 				} );
 			} );
 		} );
@@ -277,6 +311,20 @@ describe( 'FontFamilyEditing', () => {
 				'<p>f<span class="text-complex">o</span>o</p>' +
 				'<p>b<span class="text-complex">a</span>r</p>' +
 				'<p>b<span class="text-complex">a</span>z</p>'
+			);
+		} );
+
+		it( 'should strip <font face=".."> styling when supportAllValues = false', () => {
+			const data = '<p><font face="Arial,Verdana">foo</font><span style="font-family: Arial">bar</span></p>';
+
+			editor.setData( data );
+
+			expect( getModelData( doc ) ).to.equal(
+				'<paragraph>[]foo<$text fontFamily="complex">bar</$text></paragraph>'
+			);
+
+			expect( editor.getData() ).to.equal(
+				'<p>foo<span class="text-complex">bar</span></p>'
 			);
 		} );
 	} );

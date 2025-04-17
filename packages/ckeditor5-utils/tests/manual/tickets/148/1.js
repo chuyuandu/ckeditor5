@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* global document */
 
-import { getOptimalPosition } from '../../../../src/dom/position';
+import { getOptimalPosition } from '../../../../src/dom/position.js';
 
 const source = document.querySelector( '.source' );
 const target = document.querySelector( '.target' );

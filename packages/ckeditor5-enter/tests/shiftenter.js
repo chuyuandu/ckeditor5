@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
 /* globals document */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import ShiftEnter from '../src/shiftenter';
-import ShiftEnterCommand from '../src/shiftentercommand';
-import EnterObserver from '../src/enterobserver';
-import DomEventData from '@ckeditor/ckeditor5-engine/src/view/observer/domeventdata';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import ShiftEnter from '../src/shiftenter.js';
+import ShiftEnterCommand from '../src/shiftentercommand.js';
+import EnterObserver from '../src/enterobserver.js';
+import DomEventData from '@ckeditor/ckeditor5-engine/src/view/observer/domeventdata.js';
 
 describe( 'ShiftEnter feature', () => {
 	let element, editor, viewDocument;
@@ -33,6 +33,25 @@ describe( 'ShiftEnter feature', () => {
 		sinon.restore();
 
 		return editor.destroy();
+	} );
+
+	it( 'should have pluginName', () => {
+		expect( ShiftEnter.pluginName ).to.equal( 'ShiftEnter' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( ShiftEnter.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ShiftEnter.isPremiumPlugin ).to.be.false;
+	} );
+
+	it( 'should add keystroke accessibility info', () => {
+		expect( editor.accessibility.keystrokeInfos.get( 'contentEditing' ).groups.get( 'common' ).keystrokes ).to.deep.include( {
+			label: 'Insert a soft break (a <code>&lt;br&gt;</code> element)',
+			keystroke: 'Shift+Enter'
+		} );
 	} );
 
 	it( 'creates the commands', () => {
@@ -92,6 +111,16 @@ describe( 'ShiftEnter feature', () => {
 		viewDocument.fire( 'enter', new DomEventData( viewDocument, domEvt, { isSoft: false } ) );
 
 		sinon.assert.calledOnce( domEvt.preventDefault );
+	} );
+
+	it( 'does not prevent default event action in composing mode', () => {
+		const domEvt = getDomEvent();
+
+		viewDocument.isComposing = true;
+
+		viewDocument.fire( 'enter', new DomEventData( viewDocument, domEvt, { isSoft: false } ) );
+
+		sinon.assert.notCalled( domEvt.preventDefault );
 	} );
 
 	function getDomEvent() {

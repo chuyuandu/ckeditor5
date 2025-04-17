@@ -1,31 +1,31 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Model from '../../src/model/model';
-import DocumentFragment from '../../src/model/documentfragment';
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import TextProxy from '../../src/model/textproxy';
+import Model from '../../src/model/model.js';
+import DocumentFragment from '../../src/model/documentfragment.js';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import TextProxy from '../../src/model/textproxy.js';
 import {
 	default as Position,
 	getTextNodeAtPosition,
 	getNodeAfterPosition,
 	getNodeBeforePosition
-} from '../../src/model/position';
-import Range from '../../src/model/range';
-import MarkerOperation from '../../src/model/operation/markeroperation';
-import AttributeOperation from '../../src/model/operation/attributeoperation';
-import InsertOperation from '../../src/model/operation/insertoperation';
-import MoveOperation from '../../src/model/operation/moveoperation';
-import RenameOperation from '../../src/model/operation/renameoperation';
-import MergeOperation from '../../src/model/operation/mergeoperation';
-import SplitOperation from '../../src/model/operation/splitoperation';
+} from '../../src/model/position.js';
+import Range from '../../src/model/range.js';
+import MarkerOperation from '../../src/model/operation/markeroperation.js';
+import AttributeOperation from '../../src/model/operation/attributeoperation.js';
+import InsertOperation from '../../src/model/operation/insertoperation.js';
+import MoveOperation from '../../src/model/operation/moveoperation.js';
+import RenameOperation from '../../src/model/operation/renameoperation.js';
+import MergeOperation from '../../src/model/operation/mergeoperation.js';
+import SplitOperation from '../../src/model/operation/splitoperation.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import LivePosition from '../../src/model/liveposition';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import LivePosition from '../../src/model/liveposition.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'Position', () => {
 	let doc, model, root, otherRoot, p, ul, li1, li2, f, o, z, b, a, r, foz, bar;
@@ -419,7 +419,7 @@ describe( 'Position', () => {
 
 			expectToThrowCKEditorError( () => {
 				position.nodeBefore;
-			}, 'model-nodelist-offset-out-of-bounds', position );
+			}, 'model-position-path-incorrect', position );
 		} );
 	} );
 
@@ -450,7 +450,7 @@ describe( 'Position', () => {
 
 			expectToThrowCKEditorError( () => {
 				position.nodeAfter;
-			}, 'model-nodelist-offset-out-of-bounds', position );
+			}, 'model-position-path-incorrect', position );
 		} );
 	} );
 
@@ -486,7 +486,31 @@ describe( 'Position', () => {
 
 			expectToThrowCKEditorError( () => {
 				position.textNode;
-			}, 'model-nodelist-offset-out-of-bounds', position );
+			}, 'model-position-path-incorrect', position );
+		} );
+	} );
+
+	describe( 'isValid()', () => {
+		it( 'should return true for a position that points to a place that exists in current model tree', () => {
+			const p1 = new Position( root, [ 0 ] );
+			const p2 = new Position( root, [ 2 ] );
+			const p3 = new Position( root, [ 1, 0, 2 ] );
+
+			expect( p1.isValid() ).to.be.true;
+			expect( p2.isValid() ).to.be.true;
+			expect( p3.isValid() ).to.be.true;
+		} );
+
+		it( 'should return false for a position that points to a place that exists in current model tree', () => {
+			const p1 = new Position( root, [ -1 ] );
+			const p2 = new Position( root, [ 3 ] );
+			const p3 = new Position( root, [ 1, 4, 0 ] );
+			const p4 = new Position( root, [ 1, 0, 0, 0 ] );
+
+			expect( p1.isValid() ).to.be.false;
+			expect( p2.isValid() ).to.be.false;
+			expect( p3.isValid() ).to.be.false;
+			expect( p4.isValid() ).to.be.false;
 		} );
 	} );
 
@@ -599,7 +623,15 @@ describe( 'Position', () => {
 			expect( positionB.isTouching( positionA ) ).to.be.true;
 		} );
 
-		it( 'should return false if there are whole nodes between positions', () => {
+		it( 'should return false if there are whole nodes between positions - same level', () => {
+			const positionA = new Position( root, [ 0 ] );
+			const positionB = new Position( root, [ 2 ] );
+
+			expect( positionA.isTouching( positionB ) ).to.be.false;
+			expect( positionB.isTouching( positionA ) ).to.be.false;
+		} );
+
+		it( 'should return false if there are whole nodes between positions - different levels', () => {
 			const positionA = new Position( root, [ 2 ] );
 			const positionB = new Position( root, [ 1, 0, 3 ] );
 
@@ -862,35 +894,50 @@ describe( 'Position', () => {
 
 		describe( 'by SplitOperation', () => {
 			it( 'transformed position is at the split position', () => {
-				const op = new SplitOperation( new Position( root, [ 3, 2 ] ), 3, null, 1 );
+				const splitPosition = new Position( root, [ 3, 2 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, null, 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 3, 2 ] );
 			} );
 
 			it( 'transformed position is after the split position', () => {
-				const op = new SplitOperation( new Position( root, [ 3, 1 ] ), 3, null, 1 );
+				const splitPosition = new Position( root, [ 3, 1 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, null, 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 4, 1 ] );
 			} );
 
 			it( 'transformed position is before the split position', () => {
-				const op = new SplitOperation( new Position( root, [ 3, 3 ] ), 3, null, 1 );
+				const splitPosition = new Position( root, [ 3, 3 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, null, 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 3, 2 ] );
 			} );
 
 			it( 'transformed position is after the split element', () => {
-				const op = new SplitOperation( new Position( root, [ 3, 1, 5 ] ), 3, null, 1 );
+				const splitPosition = new Position( root, [ 3, 1, 5 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, null, 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 3, 3 ] );
 			} );
 
 			it( 'transformed position is before the split element', () => {
-				const op = new SplitOperation( new Position( root, [ 3, 3, 5 ] ), 3, null, 1 );
+				const splitPosition = new Position( root, [ 3, 3, 5 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, null, 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 3, 2 ] );
@@ -899,7 +946,10 @@ describe( 'Position', () => {
 			it( 'transformed position is in graveyard and split position uses graveyard element', () => {
 				pos = new Position( doc.graveyard, [ 1 ] );
 
-				const op = new SplitOperation( new Position( root, [ 3, 2 ] ), 3, new Position( doc.graveyard, [ 0 ] ), 1 );
+				const splitPosition = new Position( root, [ 3, 2 ] );
+				const insertionPosition = SplitOperation.getInsertionPosition( splitPosition );
+
+				const op = new SplitOperation( splitPosition, 3, insertionPosition, new Position( doc.graveyard, [ 0 ] ), 1 );
 				const transformed = pos.getTransformedByOperation( op );
 
 				expect( transformed.path ).to.deep.equal( [ 0 ] );

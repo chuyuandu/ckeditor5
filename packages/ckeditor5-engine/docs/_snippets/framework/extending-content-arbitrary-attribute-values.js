@@ -1,11 +1,13 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md.
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-/* globals ClassicEditor, console, window, document */
-
-import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
+import {
+	CS_CONFIG,
+	ClassicEditor,
+	getViewportTopOffsetConfig
+} from '@snippets/index.js';
 
 function HandleFontSizeValue( editor ) {
 	// Add a special catch-all converter for the font size feature.
@@ -53,8 +55,12 @@ ClassicEditor
 		cloudServices: CS_CONFIG,
 		extraPlugins: [ HandleFontSizeValue ],
 		toolbar: {
-			items: [ 'heading', '|', 'bold', 'italic', '|', 'fontSize' ],
-			viewportTopOffset: window.getViewportTopOffsetConfig()
+			items: [ 'heading', '|', 'bold', 'italic', '|', 'fontSize' ]
+		},
+		ui: {
+			viewportOffset: {
+				top: getViewportTopOffsetConfig()
+			}
 		},
 		fontSize: {
 			options: [ 10, 12, 14, 'default', 18, 20, 22 ]

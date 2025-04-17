@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2020, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+ * @license Copyright (c) 2003-2025, CKSource Holding sp. z o.o. All rights reserved.
+ * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-licensing-options
  */
 
-import Autoformat from '../src/autoformat';
-import inlineAutoformatEditing from '../src/inlineautoformatediting';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import Enter from '@ckeditor/ckeditor5-enter/src/enter';
-import { setData, getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import Autoformat from '../src/autoformat.js';
+import inlineAutoformatEditing from '../src/inlineautoformatediting.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import Enter from '@ckeditor/ckeditor5-enter/src/enter.js';
+import { setData, getData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'inlineAutoformatEditing', () => {
 	let editor, model, doc, plugin, formatSpy;
@@ -31,6 +31,10 @@ describe( 'inlineAutoformatEditing', () => {
 
 				model.schema.extend( '$text', { allowAttributes: 'testAttribute' } );
 			} );
+	} );
+
+	afterEach( async () => {
+		await editor.destroy();
 	} );
 
 	describe( 'regExp', () => {
@@ -152,11 +156,23 @@ describe( 'inlineAutoformatEditing', () => {
 		} );
 	} );
 
-	it( 'should ignore transparent batches', () => {
+	it( 'should ignore non-local batches', () => {
 		inlineAutoformatEditing( editor, plugin, /(\*)(.+?)(\*)/g, formatSpy );
 
 		setData( model, '<paragraph>*foobar[]</paragraph>' );
-		model.enqueueChange( 'transparent', writer => {
+		model.enqueueChange( { isLocal: false }, writer => {
+			writer.insertText( '*', doc.selection.getFirstPosition() );
+		} );
+
+		sinon.assert.notCalled( formatSpy );
+		expect( getData( model ) ).to.equal( '<paragraph>*foobar*[]</paragraph>' );
+	} );
+
+	it( 'should ignore undo batches', () => {
+		inlineAutoformatEditing( editor, plugin, /(\*)(.+?)(\*)/g, formatSpy );
+
+		setData( model, '<paragraph>*foobar[]</paragraph>' );
+		model.enqueueChange( { isUndo: true }, writer => {
 			writer.insertText( '*', doc.selection.getFirstPosition() );
 		} );
 
